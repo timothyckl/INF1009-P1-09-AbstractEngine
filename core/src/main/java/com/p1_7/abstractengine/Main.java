@@ -3,14 +3,15 @@ package com.p1_7.abstractengine;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import com.p1_7.abstractengine.*;
+import com.p1_7.abstractengine.managers.impl.EntityManager;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
+    EntityManager entityManager;
 
     @Override
     public void create() {
-
+        entityManager = new EntityManager();
     }
 
     @Override
