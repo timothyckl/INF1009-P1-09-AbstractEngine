@@ -2,13 +2,6 @@ package com.p1_7.abstractengine.managers.impl;
 
 import com.p1_7.abstractengine.managers.base.AbstractManager;
 
-public class MovementManager extends AbstractManager{
-    @Override
-    public void init() {}
+public class MovementManager extends AbstractManager {
 
-    @Override
-    public void update(float deltaTime) {}
-
-    @Override
-    public void shutdown() {}
 }
