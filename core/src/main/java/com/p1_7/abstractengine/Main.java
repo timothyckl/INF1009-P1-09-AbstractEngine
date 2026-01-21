@@ -44,12 +44,12 @@ public class Main extends ApplicationAdapter {
         System.out.println("Retrieved: " + retrieved);
 
         // query entities by tag
-        List<Entity> dynamicEntities = entityManager.getEntitiesByTag(SimulationTag.DYNAMIC);
+        List<Entity> dynamicEntities = entityManager.getEntitiesBy(SimulationTag.DYNAMIC, false);
         System.out.println("Dynamic entities: " + dynamicEntities.size());
 
         // check tag count
-        int dynamicCount = entityManager.countEntitiesByTag(SimulationTag.DYNAMIC);
-        int staticCount = entityManager.countEntitiesByTag(SimulationTag.STATIC);
+        int dynamicCount = entityManager.countEntitiesBy(SimulationTag.DYNAMIC);
+        int staticCount = entityManager.countEntitiesBy(SimulationTag.STATIC);
         System.out.println("Dynamic: " + dynamicCount + ", Static: " + staticCount);
 
         // iterate all entities
