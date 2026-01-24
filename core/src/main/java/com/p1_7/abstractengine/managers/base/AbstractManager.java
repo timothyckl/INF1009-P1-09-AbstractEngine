@@ -6,9 +6,10 @@ import com.p1_7.abstractengine.managers.api.IManager;
  * Abstract base class for all managers using the template method pattern.
  *
  * Provides lifecycle management with initialisation state tracking.
- * Subclasses should override the hook methods onInit(), onUpdate(float)},
- * onShutdown()})
+ * Subclasses should override the hook methods like onInit() and onShutdown()
  * rather than the final template methods.
+ *
+ * @see Updatable for managers requiring per-frame updates
  */
 public abstract class AbstractManager implements IManager {
 
@@ -26,19 +27,6 @@ public abstract class AbstractManager implements IManager {
         }
         onInit();
         initialised = true;
-    }
-
-    /**
-     * Updates this manager. Silently skips if not initialised.
-     *
-     * @param deltaTime the time elapsed since the last update
-     */
-    @Override
-    public final void update(float deltaTime) {
-        if (!initialised) {
-            return;
-        }
-        onUpdate(deltaTime);
     }
 
     /**
@@ -67,16 +55,6 @@ public abstract class AbstractManager implements IManager {
      * manager-specific initialisation logic.
      */
     protected void onInit() {
-        // default empty implementation
-    }
-
-    /**
-     * Hook method called during update. Override to provide
-     * manager-specific update logic.
-     *
-     * @param deltaTime the time elapsed since the last update
-     */
-    protected void onUpdate(float deltaTime) {
         // default empty implementation
     }
 
