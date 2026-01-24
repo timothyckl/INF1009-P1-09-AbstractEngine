@@ -7,7 +7,12 @@ import com.p1_7.abstractengine.core.AbstractProperty;
 import com.p1_7.abstractengine.core.Entity;
 import com.p1_7.abstractengine.core.EntityRepository;
 import com.p1_7.abstractengine.core.Tag;
-import com.p1_7.abstractengine.events.EntityEventType;
+import com.p1_7.abstractengine.events.EntityActiveChangedEvent;
+import com.p1_7.abstractengine.events.EntityAddedEvent;
+import com.p1_7.abstractengine.events.EntityPropertyChangedEvent;
+import com.p1_7.abstractengine.events.EntityRemovedEvent;
+import com.p1_7.abstractengine.events.EntityTagChangedEvent;
+import com.p1_7.abstractengine.events.Event;
 import com.p1_7.abstractengine.managers.base.AbstractManager;
 
 public class EntityManager extends AbstractManager implements EntityRepository {
@@ -74,7 +79,7 @@ public class EntityManager extends AbstractManager implements EntityRepository {
             return false;
         }
         entities.put(entity.getID(), entity);
-        publish(EntityEventType.ADDED, entity);
+        publish(new EntityAddedEvent(entity));
         return true;
     }
 
@@ -90,7 +95,7 @@ public class EntityManager extends AbstractManager implements EntityRepository {
         }
         Entity removed = entities.remove(id);
         if (removed != null) {
-            publish(EntityEventType.REMOVED, removed);
+            publish(new EntityRemovedEvent(removed));
             return true;
         }
         return false;
@@ -114,7 +119,7 @@ public class EntityManager extends AbstractManager implements EntityRepository {
         }
 
         entity.setActive(active);
-        publish(EntityEventType.ACTIVE_CHANGED, entity);
+        publish(new EntityActiveChangedEvent(entity, active));
     }
 
     /**
@@ -146,7 +151,7 @@ public class EntityManager extends AbstractManager implements EntityRepository {
         }
 
         entity.addTag(tag);
-        publish(EntityEventType.TAG_CHANGED, entity);
+        publish(new EntityTagChangedEvent(entity, tag, true));
     }
 
     /**
@@ -163,7 +168,7 @@ public class EntityManager extends AbstractManager implements EntityRepository {
         }
 
         entity.removeTag(tag);
-        publish(EntityEventType.TAG_CHANGED, entity);
+        publish(new EntityTagChangedEvent(entity, tag, false));
     }
 
     // ========================================================================
@@ -183,7 +188,7 @@ public class EntityManager extends AbstractManager implements EntityRepository {
         }
 
         entity.addProperty(property);
-        publish(EntityEventType.PROPERTY_CHANGED, entity);
+        publish(new EntityPropertyChangedEvent(entity, property, true));
     }
 
     /**
@@ -199,18 +204,17 @@ public class EntityManager extends AbstractManager implements EntityRepository {
         }
 
         entity.removeProperty(property);
-        publish(EntityEventType.PROPERTY_CHANGED, entity);
+        publish(new EntityPropertyChangedEvent(entity, property, false));
     }
 
     /**
-     * Publishes an event through the EventManager if available.
+     * publishes an event through the EventManager if available.
      *
-     * @param type   the event type
-     * @param entity the entity associated with the event
+     * @param event the event to publish
      */
-    private void publish(EntityEventType type, Entity entity) {
+    private void publish(Event event) {
         if (eventManager != null) {
-            eventManager.publish(type, entity);
+            eventManager.publish(event);
         }
     }
 
