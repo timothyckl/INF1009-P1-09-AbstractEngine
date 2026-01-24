@@ -1,42 +1,51 @@
 package com.p1_7.abstractengine.managers.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import com.badlogic.gdx.utils.ObjectMap;
 import com.p1_7.abstractengine.core.AbstractProperty;
 import com.p1_7.abstractengine.core.Entity;
+import com.p1_7.abstractengine.core.EntityRepository;
 import com.p1_7.abstractengine.core.Tag;
+import com.p1_7.abstractengine.events.EntityEventType;
 import com.p1_7.abstractengine.managers.base.AbstractManager;
 
-public class EntityManager extends AbstractManager {
+public class EntityManager extends AbstractManager implements EntityRepository {
     private ObjectMap<UUID, Entity> entities;
+    private EventManager eventManager;
 
     public EntityManager() {
         entities = new ObjectMap<>();
     }
 
-    @Override
-    protected void onInit() {
+    /**
+     * Sets the EventManager for publishing entity events.
+     *
+     * @param eventManager the event manager to use
+     */
+    public void setEventManager(EventManager eventManager) {
+        this.eventManager = eventManager;
+    }
 
+    /**
+     * Returns the current EventManager.
+     *
+     * @return the event manager, or null if not set
+     */
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
     @Override
-    protected void onUpdate(float deltaTime) {
-        // iterate through all entities and update active ones
-        for (Entity entity : entities.values()) {
-            if (entity.isActive()) {
-                entity.update(deltaTime);
-            }
-        }
+    protected void onInit() {
+        // no special initialisation required
     }
 
     @Override
     protected void onShutdown() {
         // deactivate all entities before clearing
         for (Entity entity : entities.values()) {
-            entity.setActive(false);
+            setEntityActive(entity, false);
         }
         entities.clear();
     }
@@ -65,6 +74,7 @@ public class EntityManager extends AbstractManager {
             return false;
         }
         entities.put(entity.getID(), entity);
+        publish(EntityEventType.ADDED, entity);
         return true;
     }
 
@@ -78,178 +88,135 @@ public class EntityManager extends AbstractManager {
         if (id == null) {
             return false;
         }
-        return entities.remove(id) != null;
+        Entity removed = entities.remove(id);
+        if (removed != null) {
+            publish(EntityEventType.REMOVED, removed);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Sets the active state of an entity and publishes an event if changed.
+     * Only operates on entities managed by this EntityManager.
+     *
+     * @param entity the entity to modify
+     * @param active the new active state
+     */
+    public void setEntityActive(Entity entity, boolean active) {
+        if (entity == null || !entities.containsKey(entity.getID())) {
+            return;
+        }
+
+        boolean previousState = entity.isActive();
+        if (previousState == active) {
+            return; // no change, no event
+        }
+
+        entity.setActive(active);
+        publish(EntityEventType.ACTIVE_CHANGED, entity);
+    }
+
+    /**
+     * Sets the active state of an entity by ID.
+     *
+     * @param id     the entity identifier
+     * @param active the new active state
+     */
+    public void setEntityActive(UUID id, boolean active) {
+        Entity entity = getEntity(id);
+        setEntityActive(entity, active);
+    }
+
+    // ========================================================================
+    // tag operations
+    // ========================================================================
+
+    /**
+     * Adds a tag to an entity and publishes a TAG_CHANGED event.
+     * Only operates on entities managed by this EntityManager.
+     *
+     * @param <T>    the tag enum type
+     * @param entity the entity to modify
+     * @param tag    the tag to add
+     */
+    public <T extends Enum<T> & Tag> void addTag(Entity entity, T tag) {
+        if (entity == null || tag == null || !entities.containsKey(entity.getID())) {
+            return;
+        }
+
+        entity.addTag(tag);
+        publish(EntityEventType.TAG_CHANGED, entity);
+    }
+
+    /**
+     * Removes a tag from an entity and publishes a TAG_CHANGED event.
+     * Only operates on entities managed by this EntityManager.
+     *
+     * @param <T>    the tag enum type
+     * @param entity the entity to modify
+     * @param tag    the tag to remove
+     */
+    public <T extends Enum<T> & Tag> void removeTag(Entity entity, T tag) {
+        if (entity == null || tag == null || !entities.containsKey(entity.getID())) {
+            return;
+        }
+
+        entity.removeTag(tag);
+        publish(EntityEventType.TAG_CHANGED, entity);
+    }
+
+    // ========================================================================
+    // property operations
+    // ========================================================================
+
+    /**
+     * Adds a property to an entity and publishes a PROPERTY_CHANGED event.
+     * Only operates on entities managed by this EntityManager.
+     *
+     * @param entity   the entity to modify
+     * @param property the property to add
+     */
+    public void addProperty(Entity entity, AbstractProperty property) {
+        if (entity == null || property == null || !entities.containsKey(entity.getID())) {
+            return;
+        }
+
+        entity.addProperty(property);
+        publish(EntityEventType.PROPERTY_CHANGED, entity);
+    }
+
+    /**
+     * Removes a property from an entity and publishes a PROPERTY_CHANGED event.
+     * Only operates on entities managed by this EntityManager.
+     *
+     * @param entity   the entity to modify
+     * @param property the property to remove
+     */
+    public void removeProperty(Entity entity, AbstractProperty property) {
+        if (entity == null || property == null || !entities.containsKey(entity.getID())) {
+            return;
+        }
+
+        entity.removeProperty(property);
+        publish(EntityEventType.PROPERTY_CHANGED, entity);
+    }
+
+    /**
+     * Publishes an event through the EventManager if available.
+     *
+     * @param type   the event type
+     * @param entity the entity associated with the event
+     */
+    private void publish(EntityEventType type, Entity entity) {
+        if (eventManager != null) {
+            eventManager.publish(type, entity);
+        }
     }
 
     /** Returns all managed entities. */
     public Iterable<Entity> getAllEntities() {
         return entities.values();
-    }
-
-    /**
-     * Returns entities with the specified tag.
-     *
-     * @param tag the tag to match
-     * @param activeOnly if true, only returns active entities
-     * @return matching entities
-     */
-    public <T extends Enum<T> & Tag> List<Entity> getEntitiesBy(T tag, boolean activeOnly) {
-        List<Entity> result = new ArrayList<>();
-        if (tag == null) {
-            return result;
-        }
-        for (Entity entity : entities.values()) {
-            if ((!activeOnly || entity.isActive()) && entity.hasTag(tag)) {
-                result.add(entity);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns entities with the specified property type.
-     *
-     * @param propertyType the property class
-     * @param activeOnly if true, only returns active entities
-     * @return matching entities
-     */
-    public List<Entity> getEntitiesBy(Class<? extends AbstractProperty> propertyType, boolean activeOnly) {
-        List<Entity> result = new ArrayList<>();
-        if (propertyType == null) {
-            return result;
-        }
-        for (Entity entity : entities.values()) {
-            if ((!activeOnly || entity.isActive()) && entity.hasProperty(propertyType)) {
-                result.add(entity);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns entities having all specified tags.
-     *
-     * @param tags tags to match
-     * @return matching entities
-     */
-    public List<Entity> getEntitiesWithAll(Tag... tags) {
-        List<Entity> result = new ArrayList<>();
-        if (tags == null || tags.length == 0) {
-            return result;
-        }
-        for (Entity entity : entities.values()) {
-            if (entity.hasAllTags(tags)) {
-                result.add(entity);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns entities having all specified property types.
-     *
-     * @param propertyTypes property classes
-     * @return matching entities
-     */
-    @SafeVarargs
-    public final List<Entity> getEntitiesWithAll(Class<? extends AbstractProperty>... propertyTypes) {
-        List<Entity> result = new ArrayList<>();
-        if (propertyTypes == null || propertyTypes.length == 0) {
-            return result;
-        }
-        for (Entity entity : entities.values()) {
-            boolean hasAll = true;
-            for (Class<? extends AbstractProperty> propertyType : propertyTypes) {
-                if (!entity.hasProperty(propertyType)) {
-                    hasAll = false;
-                    break;
-                }
-            }
-            if (hasAll) {
-                result.add(entity);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns entities having any specified tag.
-     *
-     * @param tags tags to match
-     * @return matching entities
-     */
-    public List<Entity> getEntitiesWithAny(Tag... tags) {
-        List<Entity> result = new ArrayList<>();
-        if (tags == null || tags.length == 0) {
-            return result;
-        }
-        for (Entity entity : entities.values()) {
-            if (entity.hasAnyTag(tags)) {
-                result.add(entity);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns entities having any specified property type.
-     *
-     * @param propertyTypes property classes
-     * @return matching entities
-     */
-    @SafeVarargs
-    public final List<Entity> getEntitiesWithAny(Class<? extends AbstractProperty>... propertyTypes) {
-        List<Entity> result = new ArrayList<>();
-        if (propertyTypes == null || propertyTypes.length == 0) {
-            return result;
-        }
-        for (Entity entity : entities.values()) {
-            for (Class<? extends AbstractProperty> propertyType : propertyTypes) {
-                if (entity.hasProperty(propertyType)) {
-                    result.add(entity);
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Counts entities with the specified tag.
-     *
-     * @param tag the tag to count
-     * @return entity count
-     */
-    public <T extends Enum<T> & Tag> int countEntitiesBy(T tag) {
-        if (tag == null) {
-            return 0;
-        }
-        int count = 0;
-        for (Entity entity : entities.values()) {
-            if (entity.hasTag(tag)) {
-                count++;
-            }
-        }
-        return count;
-    }
-
-    /**
-     * Counts entities with the specified property type.
-     *
-     * @param propertyType the property class
-     * @return entity count
-     */
-    public int countEntitiesBy(Class<? extends AbstractProperty> propertyType) {
-        if (propertyType == null) {
-            return 0;
-        }
-        int count = 0;
-        for (Entity entity : entities.values()) {
-            if (entity.hasProperty(propertyType)) {
-                count++;
-            }
-        }
-        return count;
     }
 
     @Override
