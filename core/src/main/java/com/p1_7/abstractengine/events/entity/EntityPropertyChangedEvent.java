@@ -1,4 +1,4 @@
-package com.p1_7.abstractengine.events;
+package com.p1_7.abstractengine.events.entity;
 
 import com.p1_7.abstractengine.core.AbstractProperty;
 import com.p1_7.abstractengine.core.Entity;
@@ -10,5 +10,4 @@ import com.p1_7.abstractengine.core.Entity;
  * @param property the property that was added or removed
  * @param added    true if the property was added, false if removed
  */
-public record EntityPropertyChangedEvent(Entity entity, AbstractProperty property, boolean added) implements EntityEvent {
-}
+public record EntityPropertyChangedEvent(Entity entity, AbstractProperty property, boolean added) implements EntityEvent {}

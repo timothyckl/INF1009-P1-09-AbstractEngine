@@ -10,11 +10,11 @@ import com.p1_7.abstractengine.core.AbstractProperty;
 import com.p1_7.abstractengine.core.Entity;
 import com.p1_7.abstractengine.core.EntityRepository;
 import com.p1_7.abstractengine.core.Tag;
-import com.p1_7.abstractengine.events.EntityActiveChangedEvent;
-import com.p1_7.abstractengine.events.EntityAddedEvent;
-import com.p1_7.abstractengine.events.EntityPropertyChangedEvent;
-import com.p1_7.abstractengine.events.EntityRemovedEvent;
-import com.p1_7.abstractengine.events.EntityTagChangedEvent;
+import com.p1_7.abstractengine.events.entity.EntityActiveChangedEvent;
+import com.p1_7.abstractengine.events.entity.EntityAddedEvent;
+import com.p1_7.abstractengine.events.entity.EntityPropertyChangedEvent;
+import com.p1_7.abstractengine.events.entity.EntityRemovedEvent;
+import com.p1_7.abstractengine.events.entity.EntityTagChangedEvent;
 
 /**
  * Provides efficient querying of entities by maintaining secondary indices

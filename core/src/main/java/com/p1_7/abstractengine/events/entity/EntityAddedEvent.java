@@ -1,4 +1,4 @@
-package com.p1_7.abstractengine.events;
+package com.p1_7.abstractengine.events.entity;
 
 import com.p1_7.abstractengine.core.Entity;
 
@@ -7,5 +7,4 @@ import com.p1_7.abstractengine.core.Entity;
  *
  * @param entity the entity that was added
  */
-public record EntityAddedEvent(Entity entity) implements EntityEvent {
-}
+public record EntityAddedEvent(Entity entity) implements EntityEvent {}

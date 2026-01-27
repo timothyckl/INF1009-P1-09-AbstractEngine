@@ -1,4 +1,4 @@
-package com.p1_7.abstractengine.events;
+package com.p1_7.abstractengine.events.entity;
 
 import com.p1_7.abstractengine.core.Entity;
 import com.p1_7.abstractengine.core.Tag;
@@ -10,5 +10,4 @@ import com.p1_7.abstractengine.core.Tag;
  * @param tag    the tag that was added or removed
  * @param added  true if the tag was added, false if removed
  */
-public record EntityTagChangedEvent(Entity entity, Tag tag, boolean added) implements EntityEvent {
-}
+public record EntityTagChangedEvent(Entity entity, Tag tag, boolean added) implements EntityEvent {}

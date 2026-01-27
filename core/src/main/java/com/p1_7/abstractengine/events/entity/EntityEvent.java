@@ -1,6 +1,7 @@
-package com.p1_7.abstractengine.events;
+package com.p1_7.abstractengine.events.entity;
 
 import com.p1_7.abstractengine.core.Entity;
+import com.p1_7.abstractengine.events.Event;
 
 /**
  * sealed interface for all entity-related events.

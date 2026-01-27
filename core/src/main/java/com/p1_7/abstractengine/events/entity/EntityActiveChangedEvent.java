@@ -1,4 +1,4 @@
-package com.p1_7.abstractengine.events;
+package com.p1_7.abstractengine.events.entity;
 
 import com.p1_7.abstractengine.core.Entity;
 
@@ -8,5 +8,4 @@ import com.p1_7.abstractengine.core.Entity;
  * @param entity the entity whose active state changed
  * @param active the new active state
  */
-public record EntityActiveChangedEvent(Entity entity, boolean active) implements EntityEvent {
-}
+public record EntityActiveChangedEvent(Entity entity, boolean active) implements EntityEvent {}
