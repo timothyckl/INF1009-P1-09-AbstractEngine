@@ -5,22 +5,22 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.utils.ScreenUtils;
 
-import com.p1_7.abstractengine.demo.DemoActions;
-import com.p1_7.abstractengine.demo.DemoCollisionManager;
-import com.p1_7.abstractengine.demo.GameOverScene;
-import com.p1_7.abstractengine.demo.GameScene;
-import com.p1_7.abstractengine.demo.MenuScene;
+import com.p1_7.abstractengine.demo.dropletGame.DemoActions;
+import com.p1_7.abstractengine.demo.dropletGame.DemoCollisionManager;
+import com.p1_7.abstractengine.demo.dropletGame.DemoRenderManager;
+import com.p1_7.abstractengine.demo.dropletGame.GameOverScene;
+import com.p1_7.abstractengine.demo.dropletGame.GameScene;
+import com.p1_7.abstractengine.demo.dropletGame.MenuScene;
 import com.p1_7.abstractengine.engine.Engine;
 import com.p1_7.abstractengine.engine.Settings;
 import com.p1_7.abstractengine.entity.EntityManager;
 import com.p1_7.abstractengine.input.InputMapping;
 import com.p1_7.abstractengine.input.InputOutputManager;
 import com.p1_7.abstractengine.movement.MovementManager;
-import com.p1_7.abstractengine.render.RenderManager;
 import com.p1_7.abstractengine.scene.SceneManager;
 
 /**
- * {@link com.badlogic.gdx.ApplicationListener} implementation shared by all
+ * com.badlogic.gdx.ApplicationListener implementation shared by all
  * platforms.
  */
 public class Main extends ApplicationAdapter {
@@ -30,7 +30,7 @@ public class Main extends ApplicationAdapter {
     private MovementManager movementManager;
     private DemoCollisionManager collisionManager;
     private InputOutputManager inputOutputManager;
-    private RenderManager renderManager;
+    private DemoRenderManager renderManager;
     private SceneManager sceneManager;
 
     @Override
@@ -43,7 +43,7 @@ public class Main extends ApplicationAdapter {
         movementManager = new MovementManager();
         collisionManager = new DemoCollisionManager();
         inputOutputManager = new InputOutputManager();
-        renderManager = new RenderManager();
+        renderManager = new DemoRenderManager();
         sceneManager = new SceneManager(entityManager, renderManager.getRenderQueue(), inputOutputManager);
 
         // 3. configure movement boundaries
