@@ -1,7 +1,13 @@
-package com.p1_7.demo;
+package com.p1_7.demo.entities;
 
 import com.p1_7.abstractengine.collision.IBounds;
 import com.p1_7.abstractengine.collision.ICollidable;
+import com.p1_7.demo.Settings;
+import com.p1_7.demo.core.Rectangle2D;
+import com.p1_7.demo.core.SpriteEntity;
+import com.p1_7.demo.Settings;
+import com.p1_7.demo.core.Rectangle2D;
+import com.p1_7.demo.core.SpriteEntity;
 
 /**
  * static cloud entity that deflects falling droplets.

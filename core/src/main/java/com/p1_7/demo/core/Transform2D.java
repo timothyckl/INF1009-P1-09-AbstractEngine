@@ -1,4 +1,4 @@
-package com.p1_7.demo;
+package com.p1_7.demo.core;
 
 import com.p1_7.abstractengine.transform.ITransform;
 

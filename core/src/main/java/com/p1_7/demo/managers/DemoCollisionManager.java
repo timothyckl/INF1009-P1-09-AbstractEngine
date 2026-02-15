@@ -1,4 +1,4 @@
-package com.p1_7.demo;
+package com.p1_7.demo.managers;
 
 import com.badlogic.gdx.utils.Array;
 

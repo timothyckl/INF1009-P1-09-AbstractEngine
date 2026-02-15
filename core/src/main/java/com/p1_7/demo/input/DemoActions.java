@@ -1,4 +1,4 @@
-package com.p1_7.demo;
+package com.p1_7.demo.input;
 
 import com.p1_7.abstractengine.input.ActionId;
 

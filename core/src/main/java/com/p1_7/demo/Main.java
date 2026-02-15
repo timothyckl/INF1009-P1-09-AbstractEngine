@@ -10,6 +10,13 @@ import com.p1_7.abstractengine.input.InputMapping;
 import com.p1_7.abstractengine.input.InputOutputManager;
 import com.p1_7.abstractengine.movement.MovementManager;
 import com.p1_7.abstractengine.scene.SceneManager;
+import com.p1_7.demo.managers.DemoCollisionManager;
+import com.p1_7.demo.managers.DemoRenderManager;
+import com.p1_7.demo.scenes.GameOverScene;
+import com.p1_7.demo.scenes.GameScene;
+import com.p1_7.demo.scenes.MenuScene;
+import com.p1_7.demo.scenes.PauseScene;
+import com.p1_7.demo.input.DemoActions;
 
 public class Main extends ApplicationAdapter {
 

@@ -1,67 +1,67 @@
-package com.p1_7.demo;
+package com.p1_7.demo.display;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.p1_7.abstractengine.entity.Entity;
 import com.p1_7.abstractengine.render.IRenderItem;
 import com.p1_7.abstractengine.transform.ITransform;
+import com.p1_7.demo.core.Transform2D;
+import com.p1_7.demo.core.Transform2D;
 
 /**
- * text entity displaying current score.
+ * reusable text rendering entity for displaying arbitrary text.
  *
  * uses libGDX BitmapFont for text rendering. returns null
  * from getAssetPath() to signal to RenderManager that this
  * requires text rendering instead of texture drawing.
+ *
+ * font scale can be adjusted at construction time to create
+ * titles, subtitles, or body text.
  */
-public class ScoreDisplay extends Entity implements IRenderItem {
+public class TextDisplay extends Entity implements IRenderItem {
 
     /** 2d spatial transform */
     private final Transform2D transform;
 
-    /** font used for rendering the score text */
+    /** font used for rendering the text */
     private final BitmapFont font;
 
-    /** current score */
-    private int score;
+    /** current text content */
+    private String text;
 
     /**
-     * constructs a score display with the specified initial score and position.
+     * constructs a text display with the specified text, position, and scale.
      *
+     * @param text the text to display
      * @param x the x position (left edge)
      * @param y the y position (baseline)
-     * @param initialScore the starting score
+     * @param scale the font scale multiplier (1.0f = normal size)
      */
-    public ScoreDisplay(float x, float y, int initialScore) {
+    public TextDisplay(String text, float x, float y, float scale) {
         super();
-        this.score = initialScore;
+        this.text = text;
         this.font = new BitmapFont(); // libgdx default font
-        this.transform = new Transform2D(x, y, 100f, 20f);
+        this.font.getData().setScale(scale);
+
+        // transform width/height are not used for text, but required by interface
+        this.transform = new Transform2D(x, y, 0f, 0f);
     }
 
     /**
-     * sets the current score.
+     * sets the text content to display.
      *
-     * @param score the new score value
+     * @param text the new text value
      */
-    public void setScore(int score) {
-        this.score = score;
+    public void setText(String text) {
+        this.text = text;
     }
 
     /**
-     * returns the current score.
+     * returns the current text content.
      *
-     * @return the score value
-     */
-    public int getScore() {
-        return score;
-    }
-
-    /**
-     * returns the formatted text to display.
-     *
-     * @return the score text string
+     * @return the text string
      */
     public String getText() {
-        return "Score: " + score;
+        return text;
     }
 
     /**
@@ -75,7 +75,7 @@ public class ScoreDisplay extends Entity implements IRenderItem {
 
     /**
      * disposes the font resource.
-     * should be called when the scene exits.
+     * should be called when the text display is no longer needed.
      */
     public void dispose() {
         font.dispose();

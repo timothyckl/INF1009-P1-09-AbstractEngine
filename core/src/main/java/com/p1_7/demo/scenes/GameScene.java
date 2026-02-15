@@ -1,4 +1,4 @@
-package com.p1_7.demo;
+package com.p1_7.demo.scenes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -11,6 +11,18 @@ import com.p1_7.abstractengine.entity.IEntityMutator;
 import com.p1_7.abstractengine.movement.MovementManager;
 import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
+import com.p1_7.demo.Settings;
+import com.p1_7.demo.display.LivesDisplay;
+import com.p1_7.demo.display.ScoreDisplay;
+import com.p1_7.demo.entities.Background;
+import com.p1_7.demo.entities.Bucket;
+import com.p1_7.demo.entities.Cloud;
+import com.p1_7.demo.entities.Droplet;
+import com.p1_7.demo.input.DemoActions;
+import com.p1_7.demo.entities.Cloud;
+import com.p1_7.demo.entities.Droplet;
+import com.p1_7.demo.input.DemoActions;
+import com.p1_7.demo.scenes.PauseScene;
 
 /**
  * main game scene for the "catch the droplet" demo.

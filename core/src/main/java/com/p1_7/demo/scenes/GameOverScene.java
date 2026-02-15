@@ -1,9 +1,12 @@
-package com.p1_7.demo;
+package com.p1_7.demo.scenes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
+import com.p1_7.demo.Settings;
+import com.p1_7.demo.display.TextDisplay;
+import com.p1_7.demo.entities.Background;
 
 /**
  * game over scene shown when player loses all lives.

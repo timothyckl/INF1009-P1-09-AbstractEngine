@@ -1,9 +1,12 @@
-package com.p1_7.demo;
+package com.p1_7.demo.display;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.p1_7.abstractengine.entity.Entity;
 import com.p1_7.abstractengine.render.IRenderItem;
 import com.p1_7.abstractengine.transform.ITransform;
+import com.p1_7.demo.Settings;
+import com.p1_7.demo.core.Transform2D;
+import com.p1_7.demo.core.Transform2D;
 
 /**
  * text entity displaying remaining lives count.

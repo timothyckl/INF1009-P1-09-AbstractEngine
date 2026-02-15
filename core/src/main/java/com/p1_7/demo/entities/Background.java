@@ -1,7 +1,8 @@
-package com.p1_7.demo;
+package com.p1_7.demo.entities;
 
 import com.p1_7.abstractengine.render.IRenderItem;
 import com.p1_7.abstractengine.transform.ITransform;
+import com.p1_7.demo.core.Transform2D;
 
 /**
  * lightweight background holder for rendering.

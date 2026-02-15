@@ -1,4 +1,6 @@
-package com.p1_7.demo;
+package com.p1_7.demo.input;
+
+import com.p1_7.demo.entities.Droplet;
 
 /**
  * functional interface for handling droplet catch events.
