@@ -57,3 +57,4 @@ Run the demo application:
 
 - Java 8 or higher
 - Gradle (libGDX is managed automatically as a Gradle dependency — no manual setup required)
+
