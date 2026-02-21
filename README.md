@@ -4,7 +4,7 @@ An abstract simulation engine built with [libGDX](https://libgdx.com/), followin
 
 ## Engine Architecture
 
-![uml-diagram](https://github.com/user-attachments/assets/39b3ec6a-b663-4f90-a271-ae19eac48679)
+![uml-diagram 2](https://github.com/user-attachments/assets/d880053c-964c-4766-872a-ed88503f0ba0)
 
 The engine is organised around a central orchestrator, abstract base classes, and concrete manager implementations:
 
