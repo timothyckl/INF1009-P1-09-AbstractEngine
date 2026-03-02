@@ -1,14 +1,16 @@
 package com.p1_7.demo.display;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.p1_7.abstractengine.entity.Entity;
 import com.p1_7.abstractengine.render.ICustomRenderable;
 import com.p1_7.abstractengine.render.IRenderItem;
+import com.p1_7.abstractengine.render.IShapeRenderer;
+import com.p1_7.abstractengine.render.ISpriteBatch;
 import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.demo.core.Transform2D;
+import com.p1_7.demo.platform.GdxShapeRenderer;
+import com.p1_7.demo.platform.GdxSpriteBatch;
 
 /**
  * abstract base class for text-based display entities.
@@ -47,18 +49,18 @@ public abstract class BaseTextDisplay extends Entity implements IRenderItem, ICu
      * @param shapeRenderer the shape renderer (currently active)
      */
     @Override
-    public void renderCustom(SpriteBatch batch, ShapeRenderer shapeRenderer) {
+    public void renderCustom(ISpriteBatch batch, IShapeRenderer shapeRenderer) {
         // switch from shaperenderer to batch for text rendering
-        shapeRenderer.end();
-        batch.begin();
+        ((GdxShapeRenderer) shapeRenderer).unwrap().end();
+        ((GdxSpriteBatch) batch).unwrap().begin();
 
         // render the text at the transform position
         float[] position = transform.getPosition();
-        font.draw(batch, getText(), position[0], position[1]);
+        font.draw(((GdxSpriteBatch) batch).unwrap(), getText(), position[0], position[1]);
 
         // restore shaperenderer for subsequent procedural items
-        batch.end();
-        shapeRenderer.begin(ShapeType.Filled);
+        ((GdxSpriteBatch) batch).unwrap().end();
+        ((GdxShapeRenderer) shapeRenderer).unwrap().begin(ShapeType.Filled);
     }
 
     /**
