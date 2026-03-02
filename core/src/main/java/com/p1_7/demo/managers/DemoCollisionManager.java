@@ -1,6 +1,6 @@
 package com.p1_7.demo.managers;
 
-import com.badlogic.gdx.utils.Array;
+import java.util.List;
 
 import com.p1_7.abstractengine.collision.CollisionManager;
 import com.p1_7.abstractengine.collision.CollisionPair;
@@ -28,7 +28,7 @@ public class DemoCollisionManager extends CollisionManager {
      * @param collisions the array of detected collision pairs from this frame
      */
     @Override
-    protected void resolve(Array<CollisionPair> collisions) {
+    protected void resolve(List<CollisionPair> collisions) {
         for (CollisionPair pair : collisions) {
             pair.getEntityA().onCollision(pair.getEntityB());
             pair.getEntityB().onCollision(pair.getEntityA());

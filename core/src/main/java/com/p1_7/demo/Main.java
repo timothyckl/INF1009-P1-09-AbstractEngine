@@ -11,7 +11,8 @@ import com.p1_7.abstractengine.input.InputManager;
 import com.p1_7.abstractengine.movement.MovementManager;
 import com.p1_7.abstractengine.scene.SceneManager;
 import com.p1_7.demo.managers.DemoCollisionManager;
-import com.p1_7.abstractengine.render.RenderManager;
+import com.p1_7.demo.platform.GdxInputSource;
+import com.p1_7.demo.platform.GdxRenderManager;
 import com.p1_7.demo.scenes.GameOverScene;
 import com.p1_7.demo.scenes.GameScene;
 import com.p1_7.demo.scenes.MenuScene;
@@ -25,7 +26,7 @@ public class Main extends ApplicationAdapter {
     private MovementManager movementManager;
     private DemoCollisionManager collisionManager;
     private InputManager inputManager;
-    private RenderManager renderManager;
+    private GdxRenderManager renderManager;
     private SceneManager sceneManager;
 
     @Override
@@ -37,8 +38,8 @@ public class Main extends ApplicationAdapter {
         entityManager = new EntityManager();
         movementManager = new MovementManager();
         collisionManager = new DemoCollisionManager();
-        inputManager = new InputManager();
-        renderManager = new RenderManager();
+        inputManager = new InputManager(new GdxInputSource());
+        renderManager = new GdxRenderManager();
         sceneManager = new SceneManager();
 
         float[] worldMinBound = { 0f, 0f };

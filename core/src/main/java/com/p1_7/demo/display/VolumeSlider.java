@@ -2,14 +2,16 @@ package com.p1_7.demo.display;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.p1_7.abstractengine.entity.Entity;
 import com.p1_7.abstractengine.render.ICustomRenderable;
 import com.p1_7.abstractengine.render.IRenderItem;
+import com.p1_7.abstractengine.render.IShapeRenderer;
+import com.p1_7.abstractengine.render.ISpriteBatch;
 import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.demo.Settings;
 import com.p1_7.demo.core.Transform2D;
+import com.p1_7.demo.platform.GdxShapeRenderer;
 
 /**
  * interactive volume slider for adjusting music volume.
@@ -101,18 +103,19 @@ public class VolumeSlider extends Entity implements IRenderItem, ICustomRenderab
      * @param shapeRenderer the shape renderer (currently active)
      */
     @Override
-    public void renderCustom(SpriteBatch batch, ShapeRenderer shapeRenderer) {
+    public void renderCustom(ISpriteBatch batch, IShapeRenderer shapeRenderer) {
+        ShapeRenderer sr = ((GdxShapeRenderer) shapeRenderer).unwrap();
         float[] position = transform.getPosition();
         float x = position[0];
         float y = position[1];
 
         // draw background bar (grey)
-        shapeRenderer.setColor(0.3f, 0.3f, 0.3f, 1f);
-        shapeRenderer.rect(x, y, width, height);
+        sr.setColor(0.3f, 0.3f, 0.3f, 1f);
+        sr.rect(x, y, width, height);
 
         // draw filled portion (green)
-        shapeRenderer.setColor(0.2f, 0.8f, 0.2f, 1f);
-        shapeRenderer.rect(x, y, width * value, height);
+        sr.setColor(0.2f, 0.8f, 0.2f, 1f);
+        sr.rect(x, y, width * value, height);
     }
 
     @Override
