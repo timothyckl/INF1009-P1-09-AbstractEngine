@@ -79,12 +79,12 @@ public class SettingScene extends Scene {
 
         FreeTypeFontParameter labelParams = new FreeTypeFontParameter();
         labelParams.size  = 28;
-        labelParams.color = Color.WHITE;
+        labelParams.color = new Color(0.10f, 0.16f, 0.24f, 1f);
         labelFont = generator.generateFont(labelParams);
 
         FreeTypeFontParameter buttonParams = new FreeTypeFontParameter();
         buttonParams.size  = 26;
-        buttonParams.color = Color.WHITE;
+        buttonParams.color = new Color(0.10f, 0.16f, 0.24f, 1f);
         buttonFont = generator.generateFont(buttonParams);
 
         generator.dispose(); // safe to dispose after generating all fonts

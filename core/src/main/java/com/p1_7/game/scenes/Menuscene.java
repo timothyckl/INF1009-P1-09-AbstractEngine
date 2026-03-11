@@ -82,7 +82,7 @@ public class MenuScene extends Scene {
         // button font — smaller, white
         FreeTypeFontParameter buttonParams = new FreeTypeFontParameter();
         buttonParams.size  = 26;
-        buttonParams.color = Color.WHITE;
+        buttonParams.color = new Color(0.10f, 0.16f, 0.24f, 1f);
         buttonFont = generator.generateFont(buttonParams);
 
         // generator can be disposed immediately after generating fonts
@@ -124,7 +124,7 @@ public class MenuScene extends Scene {
 
         if (btnStart.isClicked()) {
             btnStart.resetClick();
-            context.changeScene("game");
+            context.changeScene("level-complete"); // temporary test route until GameScene exists
             return;
         }
         if (btnSettings.isClicked()) {

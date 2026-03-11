@@ -10,6 +10,7 @@ import com.p1_7.abstractengine.scene.SceneManager;
 
 import com.p1_7.game.platform.GdxInputSource;
 import com.p1_7.game.platform.GdxRenderManager;
+import com.p1_7.game.scenes.LevelCompleteScene;
 import com.p1_7.game.scenes.MenuScene;
 import com.p1_7.game.scenes.SettingScene;
 
@@ -46,6 +47,9 @@ public class Main extends ApplicationAdapter {
 
         // settings screen
         sceneManager.registerScene(new SettingScene());
+
+        // temporary level-complete screen for flow testing
+        sceneManager.registerScene(new LevelCompleteScene());
 
         sceneManager.setInitialScene("menu"); // start at the main menu
         engine.registerManager(sceneManager);

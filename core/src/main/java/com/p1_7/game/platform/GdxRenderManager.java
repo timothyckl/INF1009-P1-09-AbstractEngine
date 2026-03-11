@@ -1,5 +1,7 @@
 package com.p1_7.game.platform;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.p1_7.abstractengine.render.IAssetStore;
 import com.p1_7.abstractengine.render.IShapeRenderer;
 import com.p1_7.abstractengine.render.ISpriteBatch;
@@ -9,6 +11,13 @@ import com.p1_7.abstractengine.render.RenderManager;
  * libgdx-specific render manager that provides concrete drawing resources.
  */
 public class GdxRenderManager extends RenderManager {
+
+    @Override
+    public void render() {
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        super.render();
+    }
 
     @Override
     protected ISpriteBatch createSpriteBatch() {
