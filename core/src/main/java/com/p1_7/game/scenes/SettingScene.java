@@ -34,7 +34,7 @@ import com.p1_7.game.platform.GdxSpriteBatch;
  *   Mouse           - click buttons
  *   ESC / Backspace - back to menu
  */
-public class Settingscene extends Scene {
+public class SettingScene extends Scene {
 
     // ── asset paths ──────────────────────────────────────────────
     private static final String BG_ASSET    = "menu/background.png";
@@ -59,7 +59,7 @@ public class Settingscene extends Scene {
     private MenuButton         btnVolumeUp;
     private MenuButton         btnBack;
 
-    public Settingscene() {
+    public SettingScene() {
         this.name = "settings";
     }
 
@@ -79,12 +79,12 @@ public class Settingscene extends Scene {
 
         FreeTypeFontParameter labelParams = new FreeTypeFontParameter();
         labelParams.size  = 28;
-        labelParams.color = Color.WHITE;
+        labelParams.color = new Color(0.10f, 0.16f, 0.24f, 1f);
         labelFont = generator.generateFont(labelParams);
 
         FreeTypeFontParameter buttonParams = new FreeTypeFontParameter();
         buttonParams.size  = 26;
-        buttonParams.color = Color.WHITE;
+        buttonParams.color = new Color(0.10f, 0.16f, 0.24f, 1f);
         buttonFont = generator.generateFont(buttonParams);
 
         generator.dispose(); // safe to dispose after generating all fonts

@@ -36,7 +36,7 @@ import com.p1_7.game.platform.GdxSpriteBatch;
  *   button_hover.png
  *   Kenney_Future.ttf
  */
-public class Menuscene extends Scene {
+public class MenuScene extends Scene {
 
     // ── asset paths ──────────────────────────────────────────────
     private static final String BG_ASSET    = "menu/background.png";
@@ -60,7 +60,7 @@ public class Menuscene extends Scene {
     private MenuButton     btnSettings;
     private MenuButton     btnExit;
 
-    public Menuscene() {
+    public MenuScene() {
         this.name = "menu";
     }
 
@@ -82,7 +82,7 @@ public class Menuscene extends Scene {
         // button font — smaller, white
         FreeTypeFontParameter buttonParams = new FreeTypeFontParameter();
         buttonParams.size  = 26;
-        buttonParams.color = Color.WHITE;
+        buttonParams.color = new Color(0.10f, 0.16f, 0.24f, 1f);
         buttonFont = generator.generateFont(buttonParams);
 
         // generator can be disposed immediately after generating fonts
@@ -124,7 +124,7 @@ public class Menuscene extends Scene {
 
         if (btnStart.isClicked()) {
             btnStart.resetClick();
-            context.changeScene("game");
+            context.changeScene("level-complete"); // temporary test route until GameScene exists
             return;
         }
         if (btnSettings.isClicked()) {
