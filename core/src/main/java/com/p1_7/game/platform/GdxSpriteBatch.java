@@ -1,7 +1,9 @@
 package com.p1_7.game.platform;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Matrix4;
 import com.p1_7.abstractengine.render.ISpriteBatch;
 
 /**
@@ -11,9 +13,14 @@ public class GdxSpriteBatch implements ISpriteBatch {
 
     /** the underlying libgdx sprite batch */
     private final SpriteBatch batch = new SpriteBatch();
+    private final Matrix4 projection = new Matrix4();
 
     @Override
     public void begin() {
+        // Dynamically sync projection matrix to current window bounds
+        // This prevents the "stretched image vs absolute hitboxes" bug
+        projection.setToOrtho2D(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.setProjectionMatrix(projection);
         batch.begin();
     }
 

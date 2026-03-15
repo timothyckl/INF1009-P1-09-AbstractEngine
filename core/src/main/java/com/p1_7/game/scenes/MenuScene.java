@@ -20,7 +20,9 @@ import com.p1_7.abstractengine.scene.SceneContext;
 import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.game.Settings;
 import com.p1_7.game.core.Transform2D;
+import com.p1_7.game.display.BrightnessOverlay;
 import com.p1_7.game.entities.MenuButton;
+import com.p1_7.game.entities.TestDroplet;
 import com.p1_7.game.platform.GdxShapeRenderer;
 import com.p1_7.game.platform.GdxSpriteBatch;
 
@@ -29,12 +31,6 @@ import com.p1_7.game.platform.GdxSpriteBatch;
  *
  * Uses image assets for background + buttons, and Kenney_Future.ttf
  * loaded via gdx-freetype for crisp text at any size.
- *
- * Assets required in assets/menu/:
- *   background.png
- *   button.png
- *   button_hover.png
- *   Kenney_Future.ttf
  */
 public class MenuScene extends Scene {
 
@@ -45,8 +41,6 @@ public class MenuScene extends Scene {
     private static final String TTF_ASSET   = "menu/Kenney_Future.ttf";
 
     // ── layout ───────────────────────────────────────────────────
-    private static final float CENTRE_X       = Settings.WINDOW_WIDTH  / 2f;
-    private static final float FIRST_BUTTON_Y = Settings.WINDOW_HEIGHT * 0.45f;
     private static final float BUTTON_SPACING = 80f;
 
     // ── fonts (generated from TTF, both owned + disposed here) ───
@@ -55,10 +49,12 @@ public class MenuScene extends Scene {
 
     // ── entities ─────────────────────────────────────────────────
     private MenuBackground background;
+    private BrightnessOverlay brightnessOverlay;
     private TitleText      titleText;
     private MenuButton     btnStart;
     private MenuButton     btnSettings;
     private MenuButton     btnExit;
+    private TestDroplet    testDroplet;
 
     public MenuScene() {
         this.name = "menu";
@@ -89,16 +85,71 @@ public class MenuScene extends Scene {
         generator.dispose();
 
         // ── entities ─────────────────────────────────────────────
+        // Instantiate them at dummy positions (0, 0), they will be immediately snapped to the correct layout
         background = new MenuBackground(BG_ASSET);
-        titleText  = new TitleText("MATH QUEST MAZE", CENTRE_X,
-                                   Settings.WINDOW_HEIGHT * 0.75f, titleFont);
+        brightnessOverlay = (BrightnessOverlay) context.entities().createEntity(() -> new BrightnessOverlay(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT));
+        titleText  = new TitleText("MATH QUEST MAZE", 0, 0, titleFont);
 
-        btnStart    = MenuButton.withTexture("START",
-                        CENTRE_X, FIRST_BUTTON_Y,                       buttonFont, BTN_ASSET, HOVER_ASSET);
-        btnSettings = MenuButton.withTexture("SETTINGS",
-                        CENTRE_X, FIRST_BUTTON_Y - BUTTON_SPACING,      buttonFont, BTN_ASSET, HOVER_ASSET);
-        btnExit     = MenuButton.withTexture("EXIT",
-                        CENTRE_X, FIRST_BUTTON_Y - BUTTON_SPACING * 2f, buttonFont, BTN_ASSET, HOVER_ASSET);
+        btnStart    = MenuButton.withTexture("START",    0, 0, buttonFont, BTN_ASSET, HOVER_ASSET);
+        btnSettings = MenuButton.withTexture("SETTINGS", 0, 0, buttonFont, BTN_ASSET, HOVER_ASSET);
+        btnExit     = MenuButton.withTexture("EXIT",     0, 0, buttonFont, BTN_ASSET, HOVER_ASSET);
+                        
+        // Spawn the test droplet
+        testDroplet = (TestDroplet) context.entities().createEntity(() -> new TestDroplet(100f, 100f));
+        
+        // Force the layout to sync instantly
+        updateLayout();
+    }
+
+    @Override
+    public void onResume(SceneContext context) {
+        // Just call our unified layout method to re-snap everything!
+        updateLayout();
+    }
+    
+    /**
+     * Unifies the layout math so onEnter and onResume both perfectly match the dynamic Window state.
+     */
+    private void updateLayout() {
+        // FIX: Pull directly from the physical hardware bounds to completely prevent OS scaling desync
+        float screenWidth = Gdx.graphics.getWidth();
+        float screenHeight = Gdx.graphics.getHeight();
+        
+        float centreX = screenWidth / 2f;
+        float firstButtonY = screenHeight * 0.45f;
+
+        // Re-anchor Background
+        if (background != null) {
+            background.getTransform().setSize(0, screenWidth);
+            background.getTransform().setSize(1, screenHeight);
+        }
+
+        if (brightnessOverlay != null) {
+            brightnessOverlay.getTransform().setSize(0, screenWidth);
+            brightnessOverlay.getTransform().setSize(1, screenHeight);
+        }
+
+        // Re-anchor Title Text
+        if (titleText != null) {
+            titleText.getTransform().setPosition(0, centreX);
+            titleText.getTransform().setPosition(1, screenHeight * 0.75f);
+        }
+
+        // Re-anchor Buttons (Note: MenuButton positions are strictly Bottom-Left anchored internally)
+        if (btnStart != null) {
+            btnStart.getTransform().setPosition(0, centreX - MenuButton.BUTTON_WIDTH / 2f);
+            btnStart.getTransform().setPosition(1, firstButtonY - MenuButton.BUTTON_HEIGHT / 2f);
+        }
+
+        if (btnSettings != null) {
+            btnSettings.getTransform().setPosition(0, centreX - MenuButton.BUTTON_WIDTH / 2f);
+            btnSettings.getTransform().setPosition(1, firstButtonY - BUTTON_SPACING - MenuButton.BUTTON_HEIGHT / 2f);
+        }
+
+        if (btnExit != null) {
+            btnExit.getTransform().setPosition(0, centreX - MenuButton.BUTTON_WIDTH / 2f);
+            btnExit.getTransform().setPosition(1, firstButtonY - BUTTON_SPACING * 2f - MenuButton.BUTTON_HEIGHT / 2f);
+        }
     }
 
     @Override
@@ -109,6 +160,7 @@ public class MenuScene extends Scene {
         if (background  != null) background.dispose();
         if (titleFont   != null) titleFont.dispose();
         if (buttonFont  != null) buttonFont.dispose();
+        if (testDroplet != null) context.entities().removeEntity(testDroplet.getId());
     }
 
     @Override
@@ -129,22 +181,32 @@ public class MenuScene extends Scene {
         }
         if (btnSettings.isClicked()) {
             btnSettings.resetClick();
-            context.changeScene("settings");
+            context.suspendScene("settings");
             return;
         }
         if (btnExit.isClicked()) {
             btnExit.resetClick();
             Gdx.app.exit();
         }
+        
+        // Update the droplet's movement
+        if (testDroplet != null) {
+            testDroplet.update(deltaTime, context.input());
+        }
     }
 
     @Override
     public void submitRenderable(SceneContext context) {
         context.renderQueue().queue(background);
+        context.renderQueue().queue(brightnessOverlay);
         context.renderQueue().queue(titleText);
         context.renderQueue().queue(btnStart);
         context.renderQueue().queue(btnSettings);
         context.renderQueue().queue(btnExit);
+        
+        if (testDroplet != null) {
+            context.renderQueue().queue(testDroplet);
+        }
     }
 
     // ── inner entities ────────────────────────────────────────────

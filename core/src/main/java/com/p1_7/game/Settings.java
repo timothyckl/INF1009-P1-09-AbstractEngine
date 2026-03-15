@@ -36,4 +36,26 @@ public class Settings {
     public static void setBrightnessLevel(float brightness) {
         BRIGHTNESS_LEVEL = Math.max(0f, Math.min(1f, brightness));
     }
+
+    public static final int[][] RESOLUTIONS = {
+        {800, 600},
+        {1280, 720},
+        {1600, 900},
+        {1920, 1080}
+    };
+    public static int currentResolutionIndex = 1; // Default to 1280x720
+
+    /**
+     * Synchronously changes the screen bounds to the newly selected index
+     */
+    public static void setResolution(int index) {
+        if (index >= 0 && index < RESOLUTIONS.length) {
+            currentResolutionIndex = index;
+            WINDOW_WIDTH = RESOLUTIONS[index][0];
+            WINDOW_HEIGHT = RESOLUTIONS[index][1];
+            
+            // Reconfigure the LibGDX window instantly
+            com.badlogic.gdx.Gdx.graphics.setWindowedMode(WINDOW_WIDTH, WINDOW_HEIGHT);
+        }
+    }
 }

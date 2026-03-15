@@ -47,6 +47,12 @@ public interface SceneContext {
     void suspendScene(String key);
 
     /**
+     * requests a deferred pop of the current scene, returning to the previous scene on the stack.
+     * intended only for scenes above suspended Scenes
+     */
+    void popScene();
+
+    /**
      * returns the scene registered under the specified key.
      *
      * @param key the name of the scene to retrieve

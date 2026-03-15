@@ -16,7 +16,7 @@ public class Background implements IRenderItem {
     private final Transform2D transform;
 
     /** path to background texture */
-    private static final String ASSET_PATH = "background.png";
+    private String ASSET_PATH;
 
     /**
      * constructs a background with the specified dimensions.
@@ -26,12 +26,22 @@ public class Background implements IRenderItem {
      */
     public Background(float width, float height) {
         // position at origin (0, 0)
+        this.ASSET_PATH = "menu/background.png";
+        this.transform = new Transform2D(0f, 0f, width, height);
+    }
+
+    public Background(String assetPath, float width, float height) {
+        this.ASSET_PATH = assetPath;
         this.transform = new Transform2D(0f, 0f, width, height);
     }
 
     @Override
     public String getAssetPath() {
         return ASSET_PATH;
+    }
+
+    public void setAssetPath(String path) {
+        this.ASSET_PATH = path;
     }
 
     @Override

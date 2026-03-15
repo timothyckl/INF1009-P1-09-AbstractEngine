@@ -4,24 +4,18 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.p1_7.abstractengine.entity.Entity;
-import com.p1_7.abstractengine.render.ICustomRenderable;
-import com.p1_7.abstractengine.render.IRenderItem;
-import com.p1_7.abstractengine.render.IShapeRenderer;
-import com.p1_7.abstractengine.render.ISpriteBatch;
+import com.p1_7.abstractengine.render.IRenderItem; //redundant
 import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
-import com.p1_7.abstractengine.transform.ITransform;
+import com.p1_7.abstractengine.transform.ITransform; //redundant
 import com.p1_7.game.Settings;
-import com.p1_7.game.core.Transform2D;
+import com.p1_7.game.core.Transform2D; //redundant
 import com.p1_7.game.entities.MenuButton;
-import com.p1_7.game.platform.GdxShapeRenderer;
-import com.p1_7.game.platform.GdxSpriteBatch;
+import com.p1_7.game.display.TextDisplay;
+import com.p1_7.game.display.Background;
+import com.p1_7.game.display.BrightnessOverlay;
 
 public class LevelCompleteScene extends Scene {
 
@@ -36,10 +30,14 @@ public class LevelCompleteScene extends Scene {
     private BitmapFont promptFont;
     private BitmapFont buttonFont;
     private Background background;
-    private LabelText title;
-    private LabelText promptStatus;
-    private LabelText hintSpace;
-    private LabelText hintEsc;
+    private BrightnessOverlay brightnessOverlay;
+    
+    // --- Refactored to TextDisplay ---
+    private TextDisplay title;
+    private TextDisplay promptStatus;
+    private TextDisplay hintSpace;
+    private TextDisplay hintEsc;
+    
     private MenuButton btnContinue;
     private MenuButton btnMainMenu;
     private int currentLevel = 1;
@@ -51,8 +49,7 @@ public class LevelCompleteScene extends Scene {
 
     @Override
     public void onEnter(SceneContext context) {
-        FreeTypeFontGenerator generator =
-            new FreeTypeFontGenerator(Gdx.files.internal(TTF_ASSET));
+        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(TTF_ASSET));
 
         FreeTypeFontParameter titleParams = new FreeTypeFontParameter();
         titleParams.size = 54;
@@ -64,7 +61,7 @@ public class LevelCompleteScene extends Scene {
 
         FreeTypeFontParameter promptParams = new FreeTypeFontParameter();
         promptParams.size = 28;
-        promptParams.color = new Color(0.10f, 0.16f, 0.24f, 1f); // dark navy for better contrast
+        promptParams.color = new Color(0.10f, 0.16f, 0.24f, 1f); 
         promptParams.shadowOffsetX = 1;
         promptParams.shadowOffsetY = -1;
         promptParams.shadowColor = new Color(1f, 1f, 1f, 0.35f);
@@ -83,13 +80,18 @@ public class LevelCompleteScene extends Scene {
         int nextLevel = lastLevel ? 1 : currentLevel + 1;
         String continueLabel = lastLevel ? "PLAY AGAIN" : "CONTINUE";
         String spaceHint = lastLevel ? "SPACE - Play Again" : "SPACE - Continue";
-        background = new Background(BG_ASSET);
-        title = new LabelText("LEVEL " + currentLevel + " COMPLETE!", cx, cy + 120f, titleFont);
-        promptStatus = new LabelText("Next up: Level " + nextLevel, cx, cy + 55f, promptFont);
+        
+        background = new Background(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT);
+        brightnessOverlay = (BrightnessOverlay) context.entities().createEntity(() -> new BrightnessOverlay(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT));
+        
+        // --- Refactored to TextDisplay with center = true ---
+        title = new TextDisplay("LEVEL " + currentLevel + " COMPLETE!", cx, cy + 120f, titleFont, true);
+        promptStatus = new TextDisplay("Next up: Level " + nextLevel, cx, cy + 55f, promptFont, true);
+        hintSpace = new TextDisplay(spaceHint, cx, cy - 175f, promptFont, true);
+        hintEsc = new TextDisplay("ESC - Main Menu", cx, cy - 220f, promptFont, true);
+        
         btnContinue = MenuButton.withTexture(continueLabel, cx, cy - 10f, buttonFont, BTN_ASSET, HOVER_ASSET);
         btnMainMenu = MenuButton.withTexture("MAIN MENU", cx, cy - 85f, buttonFont, BTN_ASSET, HOVER_ASSET);
-        hintSpace = new LabelText(spaceHint, cx, cy - 175f, promptFont);
-        hintEsc = new LabelText("ESC - Main Menu", cx, cy - 220f, promptFont);
 
         inputCooldown = INPUT_COOLDOWN_SECONDS;
     }
@@ -133,6 +135,7 @@ public class LevelCompleteScene extends Scene {
     @Override
     public void submitRenderable(SceneContext context) {
         context.renderQueue().queue(background);
+        context.renderQueue().queue(brightnessOverlay);
         context.renderQueue().queue(title);
         context.renderQueue().queue(promptStatus);
         context.renderQueue().queue(btnContinue);
@@ -145,6 +148,7 @@ public class LevelCompleteScene extends Scene {
         return currentLevel >= MAX_LEVEL;
     }
 
+    /* Not deleting, but Background uses Background.java class instead
     private static class Background implements IRenderItem {
         private final Transform2D transform;
         private final String assetPath;
@@ -157,33 +161,5 @@ public class LevelCompleteScene extends Scene {
         @Override public String getAssetPath() { return assetPath; }
         @Override public ITransform getTransform() { return transform; }
     }
-
-    private static class LabelText extends Entity implements IRenderItem, ICustomRenderable {
-        private final Transform2D transform;
-        private final BitmapFont font;
-        private final String text;
-
-        LabelText(String text, float cx, float cy, BitmapFont font) {
-            this.text = text;
-            this.font = font;
-            this.transform = new Transform2D(cx, cy, 0f, 0f);
-        }
-
-        @Override public String getAssetPath() { return null; }
-        @Override public ITransform getTransform() { return transform; }
-
-        @Override
-        public void renderCustom(ISpriteBatch batch, IShapeRenderer shapeRenderer) {
-            ShapeRenderer sr = ((GdxShapeRenderer) shapeRenderer).unwrap();
-            SpriteBatch sb = ((GdxSpriteBatch) batch).unwrap();
-            sr.end();
-            sb.begin();
-            GlyphLayout layout = new GlyphLayout(font, text);
-            font.draw(sb, text,
-                transform.getPosition(0) - layout.width / 2f,
-                transform.getPosition(1) + layout.height / 2f);
-            sb.end();
-            sr.begin(ShapeRenderer.ShapeType.Filled);
-        }
-    }
+    */
 }

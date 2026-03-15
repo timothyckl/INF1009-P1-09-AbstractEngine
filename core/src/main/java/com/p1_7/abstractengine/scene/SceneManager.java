@@ -103,6 +103,11 @@ public class SceneManager extends UpdatableManager {
             }
 
             @Override
+            public void popScene() {
+                SceneManager.this.requestPop();
+            }
+
+            @Override
             public Scene getScene(String key) {
                 return SceneManager.this.getScene(key);
             }
@@ -168,6 +173,20 @@ public class SceneManager extends UpdatableManager {
     public void requestSuspend(String key) {
         validateSceneKey(key);
         this.pendingSuspendKey = key;
+    }
+
+    /**
+     * schedules a pop transition to the named scene for the next update tick.
+     *
+     * @param key the name of the target scene
+     */
+    public void requestPop() {;
+        String previousKey = getSuspendedScene();
+        if (previousKey != null) {
+            requestChange(previousKey);
+        } else {
+            throw new IllegalStateException("No Suspended Scene to Resume");
+        }
     }
 
     /**

@@ -15,9 +15,10 @@ import com.p1_7.abstractengine.scene.SceneManager;
 import com.p1_7.game.input.MappableActions;
 import com.p1_7.game.platform.GdxInputSource;
 import com.p1_7.game.platform.GdxRenderManager;
-import com.p1_7.game.scenes.LevelCompleteScene;
 import com.p1_7.game.scenes.MenuScene;
 import com.p1_7.game.scenes.SettingsScene;
+import com.p1_7.game.scenes.LevelCompleteScene;
+import com.p1_7.game.managers.AudioManager;
 
 /**
  * Entry point for the game application.
@@ -30,9 +31,6 @@ public class Main extends ApplicationAdapter {
 
     private Engine engine;
     
-    // LibGDX Music instance for streaming long audio files like background music
-    private Music bgMusic;
-
     /**
      * Initialises the engine and registers all managers and scenes.
      * Called once by libGDX when the application window is ready.
@@ -63,18 +61,18 @@ public class Main extends ApplicationAdapter {
 
         // Scene setup
         SceneManager sceneManager = new SceneManager();
-        sceneManager.registerScene(new HelloWorldScene());
-        sceneManager.setInitialScene("hello");
+        sceneManager.registerScene(new MenuScene());
+        sceneManager.registerScene(new SettingsScene(inputManager));
+        sceneManager.registerScene(new LevelCompleteScene());
+        sceneManager.setInitialScene("menu");
         engine.registerManager(sceneManager);
 
         engine.init();
 
         // --- AUDIO SETUP ---
-        // Load the music file from the assets directory
-        bgMusic = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
-        bgMusic.setLooping(true); // Loop infinitely
-        bgMusic.setVolume(Settings.VOLUME_LEVEL); // Set initial volume
-        bgMusic.play();
+        // Delegate all audio loading and playback to the AudioManager
+        AudioManager.getInstance().loadMusic("bgMusic", "demo_archive/music.mp3");
+        AudioManager.getInstance().playMusic("bgMusic", true);
     }
 
     /**
@@ -87,11 +85,8 @@ public class Main extends ApplicationAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // --- DYNAMIC AUDIO UPDATE ---
-        // Continuously poll the Settings class. If the Slider in SettingsScene 
-        // changes VOLUME_LEVEL, the music volume will immediately adjust globally!
-        if (bgMusic != null) {
-            bgMusic.setVolume(Settings.VOLUME_LEVEL);
-        }
+        // Delegate volume updates to the AudioManager
+        AudioManager.getInstance().updateVolume();
 
         // 2. Process engine logic and rendering
         engine.update(Gdx.graphics.getDeltaTime());
@@ -104,10 +99,8 @@ public class Main extends ApplicationAdapter {
      */
     @Override
     public void dispose() {
-        // Always dispose of heavy audio resources to prevent memory leaks
-        if (bgMusic != null) {
-            bgMusic.dispose();
-        }
+        // Delegate audio cleanup to the AudioManager
+        AudioManager.getInstance().dispose();
         engine.shutdown();
     }
 }
