@@ -1,15 +1,13 @@
-package com.p1_7.game.platform;
+package com.p1_7.mobius.platform;
 
 import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.graphics.Texture;
 import com.p1_7.abstractengine.render.IAssetStore;
 
-/**
- * libgdx implementation of IAssetStore that wraps an AssetManager.
- */
+// libgdx implementation of IAssetStore that wraps an AssetManager
 public class GdxAssetStore implements IAssetStore {
 
-    /** the underlying libgdx asset manager */
+    // the underlying libgdx asset manager
     private final AssetManager assetManager = new AssetManager();
 
     /**

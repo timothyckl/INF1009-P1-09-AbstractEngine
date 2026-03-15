@@ -1,13 +1,8 @@
-package com.p1_7.game.core;
+package com.p1_7.mobius.core;
 
 import com.p1_7.abstractengine.transform.ITransform;
 
-/**
- * concrete 2D implementation of ITransform.
- *
- * manages position (x, y) and size (width, height) in 2D space.
- * per-axis indexed accessors prevent external mutation of internal arrays.
- */
+// concrete 2D implementation of ITransform — manages position (x, y) and size (width, height)
 public class Transform2D implements ITransform {
 
     // x, y coordinates
@@ -31,21 +26,37 @@ public class Transform2D implements ITransform {
         this.size[1] = height;
     }
 
+    /**
+     * @param axis 0 for x, 1 for y
+     * @return the position value on the given axis
+     */
     @Override
     public float getPosition(int axis) {
         return position[axis];
     }
 
+    /**
+     * @param axis  0 for x, 1 for y
+     * @param value the new position value
+     */
     @Override
     public void setPosition(int axis, float value) {
         position[axis] = value;
     }
 
+    /**
+     * @param axis 0 for width, 1 for height
+     * @return the size value on the given axis
+     */
     @Override
     public float getSize(int axis) {
         return size[axis];
     }
 
+    /**
+     * @param axis  0 for width, 1 for height
+     * @param value the new size value
+     */
     @Override
     public void setSize(int axis, float value) {
         size[axis] = value;

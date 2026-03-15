@@ -1,11 +1,9 @@
-package com.p1_7.demo.platform;
+package com.p1_7.mobius.platform;
 
 import com.badlogic.gdx.Gdx;
 import com.p1_7.abstractengine.input.IInputSource;
 
-/**
- * libgdx implementation of IInputSource that delegates to Gdx.input.
- */
+// libgdx implementation of IInputSource that delegates to Gdx.input
 public class GdxInputSource implements IInputSource {
 
     /**
