@@ -15,6 +15,8 @@ import com.p1_7.abstractengine.scene.SceneManager;
 import com.p1_7.game.input.MappableActions;
 import com.p1_7.game.platform.GdxInputSource;
 import com.p1_7.game.platform.GdxRenderManager;
+import com.p1_7.game.scenes.LevelCompleteScene;
+import com.p1_7.game.scenes.MenuScene;
 import com.p1_7.game.scenes.SettingsScene;
 
 /**
@@ -61,8 +63,8 @@ public class Main extends ApplicationAdapter {
 
         // Scene setup
         SceneManager sceneManager = new SceneManager();
-        sceneManager.registerScene(new SettingsScene(inputManager));
-        sceneManager.setInitialScene("settings");
+        sceneManager.registerScene(new HelloWorldScene());
+        sceneManager.setInitialScene("hello");
         engine.registerManager(sceneManager);
 
         engine.init();
