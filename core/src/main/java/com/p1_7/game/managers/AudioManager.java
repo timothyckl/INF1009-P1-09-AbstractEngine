@@ -1,8 +1,6 @@
 package com.p1_7.game.managers;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Audio;
-import com.badlogic.gdx.Files;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.p1_7.abstractengine.engine.Manager;
@@ -21,12 +19,6 @@ import java.util.Map;
  */
 public class AudioManager extends Manager implements IAudioManager {
 
-    /** gdx audio backend used to create music and sound instances */
-    private final Audio audio;
-
-    /** gdx files backend used to resolve internal asset paths */
-    private final Files files;
-
     /** cached music tracks, keyed by caller-supplied name */
     private final Map<String, Music> musicCache = new HashMap<>();
 
@@ -40,14 +32,6 @@ public class AudioManager extends Manager implements IAudioManager {
     private String currentMusicKey;
 
     /**
-     * constructs an AudioManager using the gdx audio and files backends.
-     */
-    public AudioManager() {
-        this.audio = Gdx.audio;
-        this.files = Gdx.files;
-    }
-
-    /**
      * loads a music track into the cache under the given key.
      * if the key is already cached, the call is a no-op.
      *
@@ -56,7 +40,7 @@ public class AudioManager extends Manager implements IAudioManager {
      */
     public void loadMusic(String key, String filePath) {
         if (!musicCache.containsKey(key)) {
-            musicCache.put(key, audio.newMusic(files.internal(filePath)));
+            musicCache.put(key, Gdx.audio.newMusic(Gdx.files.internal(filePath)));
         }
     }
 
@@ -69,7 +53,7 @@ public class AudioManager extends Manager implements IAudioManager {
      */
     public void loadSound(String key, String filePath) {
         if (!soundCache.containsKey(key)) {
-            soundCache.put(key, audio.newSound(files.internal(filePath)));
+            soundCache.put(key, Gdx.audio.newSound(Gdx.files.internal(filePath)));
         }
     }
 
