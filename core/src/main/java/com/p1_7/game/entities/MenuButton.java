@@ -11,8 +11,8 @@ import com.p1_7.abstractengine.render.IDrawContext;
 import com.p1_7.abstractengine.render.IRenderable;
 import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.game.core.Transform2D;
+import com.p1_7.game.input.ICursorSource;
 import com.p1_7.game.platform.GdxDrawContext;
-import com.p1_7.game.Settings;
 
 /**
  * Reusable UI button for menus. Supports two modes:
@@ -121,15 +121,14 @@ public class MenuButton extends Entity implements IRenderable {
     // ── per-frame input ──────────────────────────────────────────
 
     /**
-     * Polls mouse position and click state.
+     * Polls cursor position and click state using the provided cursor source.
      * Call once per frame from the scene's update().
      *
-     * LibGDX reports Y from the top of the window; we flip it to
-     * match the bottom-left world origin used by the render system.
+     * @param cursor the world-space cursor source (Y-flip already applied)
      */
-    public void updateInput() {
-        float mx = Gdx.input.getX();
-        float my = Settings.getWindowHeight() - Gdx.input.getY();
+    public void updateInput(ICursorSource cursor) {
+        float mx = cursor.getCursorX();
+        float my = cursor.getCursorY();
 
         float bx = transform.getPosition(0);
         float by = transform.getPosition(1);

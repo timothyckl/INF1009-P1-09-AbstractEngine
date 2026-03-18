@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.p1_7.abstractengine.entity.Entity;
+import com.p1_7.abstractengine.input.IInputExtensionRegistry;
 import com.p1_7.abstractengine.render.IDrawContext;
 import com.p1_7.abstractengine.render.IRenderable;
 import com.p1_7.abstractengine.render.IRenderQueue;
@@ -17,6 +18,7 @@ import com.p1_7.abstractengine.scene.SceneContext;
 import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.game.Settings;
 import com.p1_7.game.core.Transform2D;
+import com.p1_7.game.input.ICursorSource;
 import com.p1_7.game.managers.IAudioManager;
 import com.p1_7.game.entities.MenuButton;
 import com.p1_7.game.platform.GdxDrawContext;
@@ -51,12 +53,15 @@ public class MenuScene extends Scene {
     private BitmapFont titleFont;
     private BitmapFont buttonFont;
 
+    // ── input ────────────────────────────────────────────────────
+    private ICursorSource cursorSource;
+
     // ── entities ─────────────────────────────────────────────────
     private MenuBackground background;
     private TitleText      titleText;
-    private MenuButton     btnStart;
-    private MenuButton     btnSettings;
-    private MenuButton     btnExit;
+    private MenuButton     startButton;
+    private MenuButton     settingsButton;
+    private MenuButton     exitButton;
 
     public MenuScene() {
         this.name = "menu";
@@ -67,6 +72,9 @@ public class MenuScene extends Scene {
         // compute layout from the current resolution so changes via setResolution take effect
         centreX       = Settings.getWindowWidth()  / 2f;
         firstButtonY  = Settings.getWindowHeight() * 0.45f;
+
+        IInputExtensionRegistry inputRegistry = context.get(IInputExtensionRegistry.class);
+        cursorSource = inputRegistry.getExtension(ICursorSource.class);
 
         IAudioManager audio = context.get(IAudioManager.class);
 
@@ -100,22 +108,23 @@ public class MenuScene extends Scene {
         titleText  = new TitleText("MATH QUEST MAZE", centreX,
                                    Settings.getWindowHeight() * 0.75f, titleFont);
 
-        btnStart    = MenuButton.withTexture("START",
+        startButton    = MenuButton.withTexture("START",
                         centreX, firstButtonY,                       buttonFont, BTN_ASSET, HOVER_ASSET);
-        btnSettings = MenuButton.withTexture("SETTINGS",
+        settingsButton = MenuButton.withTexture("SETTINGS",
                         centreX, firstButtonY - BUTTON_SPACING,      buttonFont, BTN_ASSET, HOVER_ASSET);
-        btnExit     = MenuButton.withTexture("EXIT",
+        exitButton     = MenuButton.withTexture("EXIT",
                         centreX, firstButtonY - BUTTON_SPACING * 2f, buttonFont, BTN_ASSET, HOVER_ASSET);
     }
 
     @Override
     public void onExit(SceneContext context) {
-        if (btnStart    != null) btnStart.dispose();
-        if (btnSettings != null) btnSettings.dispose();
-        if (btnExit     != null) btnExit.dispose();
+        if (startButton    != null) startButton.dispose();
+        if (settingsButton != null) settingsButton.dispose();
+        if (exitButton     != null) exitButton.dispose();
         if (background  != null) background.dispose();
         if (titleFont   != null) titleFont.dispose();
         if (buttonFont  != null) buttonFont.dispose();
+        cursorSource = null;
     }
 
     @Override
@@ -125,22 +134,23 @@ public class MenuScene extends Scene {
             return;
         }
 
-        btnStart.updateInput();
-        btnSettings.updateInput();
-        btnExit.updateInput();
+        if (cursorSource == null) return;
+        startButton.updateInput(cursorSource);
+        settingsButton.updateInput(cursorSource);
+        exitButton.updateInput(cursorSource);
 
-        if (btnStart.isClicked()) {
-            btnStart.resetClick();
+        if (startButton.isClicked()) {
+            startButton.resetClick();
             context.changeScene("level-complete"); // temporary test route until GameScene exists
             return;
         }
-        if (btnSettings.isClicked()) {
-            btnSettings.resetClick();
+        if (settingsButton.isClicked()) {
+            settingsButton.resetClick();
             context.changeScene("settings");
             return;
         }
-        if (btnExit.isClicked()) {
-            btnExit.resetClick();
+        if (exitButton.isClicked()) {
+            exitButton.resetClick();
             Gdx.app.exit();
         }
     }
@@ -149,9 +159,9 @@ public class MenuScene extends Scene {
     public void submitRenderable(IRenderQueue renderQueue) {
         renderQueue.queue(background);
         renderQueue.queue(titleText);
-        renderQueue.queue(btnStart);
-        renderQueue.queue(btnSettings);
-        renderQueue.queue(btnExit);
+        renderQueue.queue(startButton);
+        renderQueue.queue(settingsButton);
+        renderQueue.queue(exitButton);
     }
 
     // ── inner entities ────────────────────────────────────────────
