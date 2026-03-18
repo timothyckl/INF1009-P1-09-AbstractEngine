@@ -11,6 +11,7 @@ import com.p1_7.abstractengine.input.InputManager;
 import com.p1_7.abstractengine.movement.MovementManager;
 import com.p1_7.abstractengine.scene.SceneManager;
 import com.p1_7.demo.managers.DemoCollisionManager;
+import com.p1_7.game.managers.AudioManager;
 import com.p1_7.demo.platform.GdxInputSource;
 import com.p1_7.demo.platform.GdxRenderManager;
 import com.p1_7.demo.scenes.GameOverScene;
@@ -28,6 +29,7 @@ public class Main extends ApplicationAdapter {
     private InputManager inputManager;
     private GdxRenderManager renderManager;
     private SceneManager sceneManager;
+    private AudioManager audioManager;
 
     @Override
     public void create() {
@@ -41,9 +43,10 @@ public class Main extends ApplicationAdapter {
         inputManager = new InputManager(new GdxInputSource());
         renderManager = new GdxRenderManager();
         sceneManager = new SceneManager();
+        audioManager = new AudioManager();
 
         float[] worldMinBound = { 0f, 0f };
-        float[] worldMaxBound = { Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT };
+        float[] worldMaxBound = { Settings.windowWidth, Settings.windowHeight };
 
         // 3. configure movement boundaries
         movementManager.setWorldBounds(worldMinBound, worldMaxBound);
@@ -75,7 +78,11 @@ public class Main extends ApplicationAdapter {
         engine.registerManager(collisionManager);
         engine.registerManager(inputManager);
         engine.registerManager(renderManager);
+        engine.registerManager(audioManager);
         engine.registerManager(sceneManager);
+
+        // expose audioManager as a scene service so scenes can retrieve it via context.get()
+        sceneManager.registerService(AudioManager.class, audioManager);
 
         // 7. initialise engine
         engine.init();

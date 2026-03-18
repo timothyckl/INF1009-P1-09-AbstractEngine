@@ -2,8 +2,8 @@ package com.p1_7.demo.scenes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.audio.Music;
 import com.p1_7.abstractengine.entity.IEntityManager;
+import com.p1_7.game.managers.AudioManager;
 import com.p1_7.abstractengine.render.IRenderQueue;
 import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
@@ -41,9 +41,6 @@ public class PauseScene extends Scene {
     /** resume prompt display */
     private TextDisplay resumePrompt;
 
-    /** reference to game music for volume control */
-    private Music musicReference;
-
     /** current lives to display */
     private int currentLives = 0;
 
@@ -69,61 +66,55 @@ public class PauseScene extends Scene {
         this.currentScore = score;
     }
 
-    /**
-     * sets the music reference for volume control.
-     * should be called before transitioning to this scene.
-     *
-     * @param music the music instance to control
-     */
-    public void setMusicReference(Music music) {
-        this.musicReference = music;
-    }
-
     @Override
     public void onEnter(SceneContext context) {
+        IEntityManager entityManager = context.get(IEntityManager.class);
+
         // 1. create background
-        background = new Background(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT);
+        background = new Background(Settings.windowWidth, Settings.windowHeight);
 
         // 2. create title text (large, centred at top)
         String titleText = "PAUSED";
-        float titleX = Settings.WINDOW_WIDTH / 2f - 60f; // approximate centring
-        float titleY = Settings.WINDOW_HEIGHT * 0.75f;
+        float titleX = Settings.windowWidth / 2f - 60f; // approximate centring
+        float titleY = Settings.windowHeight * 0.75f;
         titleDisplay = new TextDisplay(titleText, titleX, titleY, 2.0f);
 
         // 3. create lives text (upper middle)
         String livesText = "Lives: " + currentLives;
-        float livesX = Settings.WINDOW_WIDTH / 2f - 50f;
-        float livesY = Settings.WINDOW_HEIGHT * 0.6f;
+        float livesX = Settings.windowWidth / 2f - 50f;
+        float livesY = Settings.windowHeight * 0.6f;
         livesDisplay = new TextDisplay(livesText, livesX, livesY, 1.2f);
 
         // 4. create score text (middle)
         String scoreText = "Score: " + currentScore;
-        float scoreX = Settings.WINDOW_WIDTH / 2f - 50f;
-        float scoreY = Settings.WINDOW_HEIGHT * 0.5f;
+        float scoreX = Settings.windowWidth / 2f - 50f;
+        float scoreY = Settings.windowHeight * 0.5f;
         scoreDisplay = new TextDisplay(scoreText, scoreX, scoreY, 1.2f);
 
         // 5. create volume label with instructions
         String volumeText = "Volume: (Use <- -> to adjust)";
-        float volumeLabelX = Settings.WINDOW_WIDTH / 2f - 120f;
-        float volumeLabelY = Settings.WINDOW_HEIGHT * 0.35f;
+        float volumeLabelX = Settings.windowWidth / 2f - 120f;
+        float volumeLabelY = Settings.windowHeight * 0.35f;
         volumeLabel = new TextDisplay(volumeText, volumeLabelX, volumeLabelY, 1.0f);
 
         // 6. create volume slider
-        float sliderX = Settings.WINDOW_WIDTH / 2f - 100f;
-        float sliderY = Settings.WINDOW_HEIGHT * 0.27f;
-        volumeSlider = (VolumeSlider) context.get(IEntityManager.class).createEntity(
+        float sliderX = Settings.windowWidth / 2f - 100f;
+        float sliderY = Settings.windowHeight * 0.27f;
+        volumeSlider = (VolumeSlider) entityManager.createEntity(
             () -> new VolumeSlider(sliderX, sliderY, 200f)
         );
 
         // 7. create resume prompt (bottom)
         String promptText = "Press ESC or P to resume";
-        float promptX = Settings.WINDOW_WIDTH / 2f - 120f;
-        float promptY = Settings.WINDOW_HEIGHT * 0.15f;
+        float promptX = Settings.windowWidth / 2f - 120f;
+        float promptY = Settings.windowHeight * 0.15f;
         resumePrompt = new TextDisplay(promptText, promptX, promptY, 1.0f);
     }
 
     @Override
     public void onExit(SceneContext context) {
+        IEntityManager entityManager = context.get(IEntityManager.class);
+
         // dispose fonts
         if (titleDisplay != null) {
             titleDisplay.dispose();
@@ -143,21 +134,21 @@ public class PauseScene extends Scene {
 
         // remove volume slider entity
         if (volumeSlider != null) {
-            context.get(IEntityManager.class).removeEntity(volumeSlider.getId());
+            entityManager.removeEntity(volumeSlider.getId());
         }
     }
 
     @Override
     public void update(float deltaTime, SceneContext context) {
+        AudioManager audioManager = context.get(AudioManager.class);
+
         // update volume slider
         if (volumeSlider != null) {
             volumeSlider.update(deltaTime);
         }
 
-        // apply volume changes to music in real-time
-        if (musicReference != null) {
-            musicReference.setVolume(Settings.MUSIC_VOLUME);
-        }
+        // apply volume changes to music in real-time via the audio manager
+        audioManager.setMusicVolume(Settings.musicVolume);
 
         // check for resume keys
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) ||
@@ -168,19 +159,21 @@ public class PauseScene extends Scene {
 
     @Override
     public void submitRenderable(SceneContext context) {
+        IRenderQueue renderQueue = context.get(IRenderQueue.class);
+
         // queue background first
-        context.get(IRenderQueue.class).queue(background);
+        renderQueue.queue(background);
 
         // queue text displays
-        context.get(IRenderQueue.class).queue(titleDisplay);
-        context.get(IRenderQueue.class).queue(livesDisplay);
-        context.get(IRenderQueue.class).queue(scoreDisplay);
-        context.get(IRenderQueue.class).queue(volumeLabel);
+        renderQueue.queue(titleDisplay);
+        renderQueue.queue(livesDisplay);
+        renderQueue.queue(scoreDisplay);
+        renderQueue.queue(volumeLabel);
 
         // queue volume slider
-        context.get(IRenderQueue.class).queue(volumeSlider);
+        renderQueue.queue(volumeSlider);
 
         // queue resume prompt
-        context.get(IRenderQueue.class).queue(resumePrompt);
+        renderQueue.queue(resumePrompt);
     }
 }

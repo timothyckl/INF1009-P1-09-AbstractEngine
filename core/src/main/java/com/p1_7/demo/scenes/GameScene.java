@@ -2,9 +2,8 @@ package com.p1_7.demo.scenes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.audio.Music;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.math.MathUtils;
+import com.p1_7.game.managers.AudioManager;
 import com.badlogic.gdx.utils.Array;
 import com.p1_7.abstractengine.collision.CollisionManager;
 import com.p1_7.abstractengine.entity.IEntityManager;
@@ -36,7 +35,7 @@ public class GameScene extends Scene {
     private static final int INITIAL_LIVES = 10;
 
     /** y coordinate where droplets spawn (top of screen) */
-    private static final float SPAWN_Y = Settings.WINDOW_HEIGHT;
+    private static final float SPAWN_Y = Settings.windowHeight;
 
     /** maximum concurrent droplets */
     private static final int MAX_DROPLETS = 5;
@@ -57,8 +56,7 @@ public class GameScene extends Scene {
 
     // ==================== audio ====================
 
-    private Sound dropSound;
-    private Music music;
+    private AudioManager audioManager;
 
     // ==================== game state ====================
 
@@ -88,6 +86,9 @@ public class GameScene extends Scene {
 
     @Override
     public void onEnter(SceneContext context) {
+        IEntityManager entityManager = context.get(IEntityManager.class);
+        this.audioManager = context.get(AudioManager.class);
+
         // 0. reset game state (for replays)
         score = 0;
         gameOver = false;
@@ -97,31 +98,27 @@ public class GameScene extends Scene {
         // 1. set world bounds for broad-phase collision detection
         collisionManager.setWorldBounds(
             new float[]{0, 0},
-            new float[]{Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT}
+            new float[]{Settings.windowWidth, Settings.windowHeight}
         );
 
-        // 2. load audio
-        dropSound = Gdx.audio.newSound(Gdx.files.internal("drop.mp3"));
-        music = Gdx.audio.newMusic(Gdx.files.internal("music.mp3"));
-        music.setLooping(true);
-        music.setVolume(Settings.MUSIC_VOLUME);
-        music.play();
+        // 2. start music (assets pre-loaded by AudioManager.onInit)
+        audioManager.playMusic("main", true);
 
         // 3. create background (not an entity)
-        background = new Background(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT);
+        background = new Background(Settings.windowWidth, Settings.windowHeight);
 
         // 4. create lives display via entity manager
-        livesDisplay = (LivesDisplay) context.get(IEntityManager.class).createEntity(() -> new LivesDisplay(INITIAL_LIVES));
+        livesDisplay = (LivesDisplay) entityManager.createEntity(() -> new LivesDisplay(INITIAL_LIVES));
 
         // 5. create score display via entity manager
-        scoreDisplay = (ScoreDisplay) context.get(IEntityManager.class).createEntity(
-            () -> new ScoreDisplay(520f, Settings.WINDOW_HEIGHT - 10f, 0)
+        scoreDisplay = (ScoreDisplay) entityManager.createEntity(
+            () -> new ScoreDisplay(520f, Settings.windowHeight - 10f, 0)
         );
 
         // 6. create bucket via entity manager
-        float bucketX = (Settings.WINDOW_WIDTH / 2f) - (Bucket.BUCKET_WIDTH / 2f);
+        float bucketX = (Settings.windowWidth / 2f) - (Bucket.BUCKET_WIDTH / 2f);
         float bucketY = 20f;
-        bucket = (Bucket) context.get(IEntityManager.class).createEntity(() -> new Bucket(bucketX, bucketY));
+        bucket = (Bucket) entityManager.createEntity(() -> new Bucket(bucketX, bucketY));
 
         // 7. register bucket with managers
         movementManager.registerMovable(bucket);
@@ -131,22 +128,18 @@ public class GameScene extends Scene {
         bucket.setCatchHandler(this::handleDropletCatch);
 
         // 8. create and register cloud deflectors
-        createClouds(context.get(IEntityManager.class));
+        createClouds(entityManager);
 
         // 9. spawn initial droplet
-        spawnDroplet(context.get(IEntityManager.class));
+        spawnDroplet(entityManager);
     }
 
     @Override
     public void onExit(SceneContext context) {
-        // stop and dispose audio
-        if (music != null) {
-            music.stop();
-            music.dispose();
-        }
-        if (dropSound != null) {
-            dropSound.dispose();
-        }
+        IEntityManager entityManager = context.get(IEntityManager.class);
+
+        // audio is owned by AudioManager; clear local reference only
+        this.audioManager = null;
 
         // dispose font
         if (livesDisplay != null) {
@@ -157,14 +150,14 @@ public class GameScene extends Scene {
         if (bucket != null) {
             movementManager.unregisterMovable(bucket);
             collisionManager.unregisterCollidable(bucket);
-            context.get(IEntityManager.class).removeEntity(bucket.getId());
+            entityManager.removeEntity(bucket.getId());
         }
 
         // clean up remaining droplets
         for (int i = 0; i < droplets.size; i++) {
             Droplet droplet = droplets.get(i);
             collisionManager.unregisterCollidable(droplet);
-            context.get(IEntityManager.class).removeEntity(droplet.getId());
+            entityManager.removeEntity(droplet.getId());
         }
         droplets.clear();
 
@@ -172,45 +165,39 @@ public class GameScene extends Scene {
         for (int i = 0; i < clouds.size; i++) {
             Cloud cloud = clouds.get(i);
             collisionManager.unregisterCollidable(cloud);
-            context.get(IEntityManager.class).removeEntity(cloud.getId());
+            entityManager.removeEntity(cloud.getId());
         }
         clouds.clear();
 
         // remove lives display entity
         if (livesDisplay != null) {
-            context.get(IEntityManager.class).removeEntity(livesDisplay.getId());
+            entityManager.removeEntity(livesDisplay.getId());
         }
 
         // remove score display entity
         if (scoreDisplay != null) {
             scoreDisplay.dispose();
-            context.get(IEntityManager.class).removeEntity(scoreDisplay.getId());
+            entityManager.removeEntity(scoreDisplay.getId());
         }
     }
 
     @Override
     public void onSuspend(SceneContext context) {
-        // minimal cleanup for pause - keep all entities and state intact
-
-        // pause music during pause menu
-        if (music != null) {
-            music.pause();
-        }
+        // pause music while pause menu is active
+        audioManager.pauseMusic();
     }
 
     @Override
     public void onResume(SceneContext context) {
-        // reconnect resources after resuming from pause
-
-        // reapply volume setting (may have changed in pause menu)
-        if (music != null) {
-            music.setVolume(Settings.MUSIC_VOLUME);
-            music.play();
-        }
+        // reapply volume (may have changed in pause menu) and resume
+        audioManager.resumeMusic();
     }
 
     @Override
     public void update(float deltaTime, SceneContext context) {
+        IEntityManager entityManager = context.get(IEntityManager.class);
+        IInputQuery inputQuery = context.get(IInputQuery.class);
+
         // check for pause key press
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) ||
             Gdx.input.isKeyJustPressed(Input.Keys.P)) {
@@ -219,7 +206,6 @@ public class GameScene extends Scene {
             PauseScene pauseScene = (PauseScene) context.getScene("pause");
             if (pauseScene != null) {
                 pauseScene.setGameState(livesDisplay.getLives(), score);
-                pauseScene.setMusicReference(music);
             }
 
             // use suspendScene to preserve game state
@@ -233,12 +219,12 @@ public class GameScene extends Scene {
         }
 
         // 1. update bucket movement
-        bucket.updateMovement(context.get(IInputQuery.class));
+        bucket.updateMovement(inputQuery);
 
         // 2. update spawn timer and spawn new droplets
         spawnTimer += deltaTime;
         if (spawnTimer >= SPAWN_INTERVAL && droplets.size < MAX_DROPLETS) {
-            spawnDroplet(context.get(IEntityManager.class));
+            spawnDroplet(entityManager);
             spawnTimer = 0f;
         }
 
@@ -263,14 +249,14 @@ public class GameScene extends Scene {
             float dropletX = dropletTransform.getPosition(0);
             if (dropletX < 0) {
                 dropletTransform.setPosition(0, 0);
-            } else if (dropletX + Droplet.DROPLET_WIDTH > Settings.WINDOW_WIDTH) {
-                dropletTransform.setPosition(0, Settings.WINDOW_WIDTH - Droplet.DROPLET_WIDTH);
+            } else if (dropletX + Droplet.DROPLET_WIDTH > Settings.windowWidth) {
+                dropletTransform.setPosition(0, Settings.windowWidth - Droplet.DROPLET_WIDTH);
             }
 
             // check if caught
             if (droplet.isCaught()) {
                 // remove entity
-                context.get(IEntityManager.class).removeEntity(droplet.getId());
+                entityManager.removeEntity(droplet.getId());
 
                 // unregister from collision manager
                 collisionManager.unregisterCollidable(droplet);
@@ -287,7 +273,7 @@ public class GameScene extends Scene {
                 livesDisplay.setLives(currentLives - 1);
 
                 // remove entity
-                context.get(IEntityManager.class).removeEntity(droplet.getId());
+                entityManager.removeEntity(droplet.getId());
 
                 // unregister from collision manager
                 collisionManager.unregisterCollidable(droplet);
@@ -312,25 +298,27 @@ public class GameScene extends Scene {
 
     @Override
     public void submitRenderable(SceneContext context) {
+        IRenderQueue renderQueue = context.get(IRenderQueue.class);
+
         // background first (draws behind)
-        context.get(IRenderQueue.class).queue(background);
+        renderQueue.queue(background);
 
         // bucket
-        context.get(IRenderQueue.class).queue(bucket);
+        renderQueue.queue(bucket);
 
         // all active droplets
         for (int i = 0; i < droplets.size; i++) {
-            context.get(IRenderQueue.class).queue(droplets.get(i));
+            renderQueue.queue(droplets.get(i));
         }
 
         // clouds (draw above droplets but below ui)
         for (int i = 0; i < clouds.size; i++) {
-            context.get(IRenderQueue.class).queue(clouds.get(i));
+            renderQueue.queue(clouds.get(i));
         }
 
         // ui displays last (draw on top)
-        context.get(IRenderQueue.class).queue(livesDisplay);
-        context.get(IRenderQueue.class).queue(scoreDisplay);
+        renderQueue.queue(livesDisplay);
+        renderQueue.queue(scoreDisplay);
     }
 
     // ==================== helper methods ====================
@@ -357,7 +345,7 @@ public class GameScene extends Scene {
      * @return random x coordinate in valid range
      */
     private float randomX() {
-        return MathUtils.random(Settings.WINDOW_WIDTH - Droplet.DROPLET_WIDTH);
+        return MathUtils.random(Settings.windowWidth - Droplet.DROPLET_WIDTH);
     }
 
     /**
@@ -376,7 +364,7 @@ public class GameScene extends Scene {
         scoreDisplay.setScore(score);
 
         // play catch sound
-        dropSound.play();
+        audioManager.playSound("drop");
     }
 
     /**

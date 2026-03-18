@@ -40,6 +40,36 @@ public class AudioManager extends Manager implements IAudioManager {
     private String currentMusicKey;
 
     /**
+     * loads all demo assets into their respective caches on engine init.
+     * playback is the scene's responsibility via playMusic/playSound.
+     */
+    @Override
+    protected void onInit() {
+        loadMusic("main", "music.mp3");
+        loadSound("drop", "drop.mp3");
+    }
+
+    /**
+     * pauses the currently playing music track, if any.
+     */
+    public void pauseMusic() {
+        if (currentMusic != null) {
+            currentMusic.pause();
+        }
+    }
+
+    /**
+     * resumes the currently playing music track, reapplying the stored volume.
+     * if no track is active this is a no-op.
+     */
+    public void resumeMusic() {
+        if (currentMusic != null) {
+            currentMusic.setVolume(Settings.musicVolume);
+            currentMusic.play();
+        }
+    }
+
+    /**
      * loads a music track into the cache under the given key.
      * if the key is already cached, the call is a no-op.
      *
