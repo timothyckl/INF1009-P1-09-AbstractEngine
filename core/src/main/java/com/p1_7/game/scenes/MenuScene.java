@@ -46,8 +46,8 @@ public class MenuScene extends Scene {
     private static final String TTF_ASSET   = "menu/Kenney_Future.ttf";
 
     // ── layout ───────────────────────────────────────────────────
-    private static final float CENTRE_X       = Settings.WINDOW_WIDTH  / 2f;
-    private static final float FIRST_BUTTON_Y = Settings.WINDOW_HEIGHT * 0.45f;
+    private static final float CENTRE_X       = Settings.windowWidth  / 2f;
+    private static final float FIRST_BUTTON_Y = Settings.windowHeight * 0.45f;
     private static final float BUTTON_SPACING = 80f;
 
     // ── fonts (generated from TTF, both owned + disposed here) ───
@@ -92,7 +92,7 @@ public class MenuScene extends Scene {
         // ── entities ─────────────────────────────────────────────
         background = new MenuBackground(BG_ASSET);
         titleText  = new TitleText("MATH QUEST MAZE", CENTRE_X,
-                                   Settings.WINDOW_HEIGHT * 0.75f, titleFont);
+                                   Settings.windowHeight * 0.75f, titleFont);
 
         btnStart    = MenuButton.withTexture("START",
                         CENTRE_X, FIRST_BUTTON_Y,                       buttonFont, BTN_ASSET, HOVER_ASSET);
@@ -141,11 +141,12 @@ public class MenuScene extends Scene {
 
     @Override
     public void submitRenderable(SceneContext context) {
-        context.get(IRenderQueue.class).queue(background);
-        context.get(IRenderQueue.class).queue(titleText);
-        context.get(IRenderQueue.class).queue(btnStart);
-        context.get(IRenderQueue.class).queue(btnSettings);
-        context.get(IRenderQueue.class).queue(btnExit);
+        IRenderQueue renderQueue = context.get(IRenderQueue.class);
+        renderQueue.queue(background);
+        renderQueue.queue(titleText);
+        renderQueue.queue(btnStart);
+        renderQueue.queue(btnSettings);
+        renderQueue.queue(btnExit);
     }
 
     // ── inner entities ────────────────────────────────────────────
@@ -159,7 +160,7 @@ public class MenuScene extends Scene {
             this.assetPath = assetPath;
             this.texture   = new Texture(Gdx.files.internal(assetPath));
             this.texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            this.transform = new Transform2D(0, 0, Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT);
+            this.transform = new Transform2D(0, 0, Settings.windowWidth, Settings.windowHeight);
         }
 
         @Override public String     getAssetPath() { return assetPath; }

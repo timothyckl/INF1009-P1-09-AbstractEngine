@@ -29,8 +29,8 @@ public class HelloWorldScene extends Scene {
     @Override
     public void onEnter(SceneContext context) {
         // position the text roughly in the centre of the window
-        float x = Settings.WINDOW_WIDTH / 2f - 90f;
-        float y = Settings.WINDOW_HEIGHT / 2f;
+        float x = Settings.windowWidth / 2f - 90f;
+        float y = Settings.windowHeight / 2f;
         helloText = new HelloWorldText("Hello, World!", x, y, 2.0f);
     }
 
@@ -62,6 +62,7 @@ public class HelloWorldScene extends Scene {
      */
     @Override
     public void submitRenderable(SceneContext context) {
-        context.get(IRenderQueue.class).queue(helloText);
+        IRenderQueue renderQueue = context.get(IRenderQueue.class);
+        renderQueue.queue(helloText);
     }
 }

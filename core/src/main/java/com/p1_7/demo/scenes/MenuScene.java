@@ -36,18 +36,18 @@ public class MenuScene extends Scene {
     @Override
     public void onEnter(SceneContext context) {
         // 1. create background
-        background = new Background(Settings.WINDOW_WIDTH, Settings.WINDOW_HEIGHT);
+        background = new Background(Settings.windowWidth, Settings.windowHeight);
 
         // 2. create title text (large, centred at top third)
         String titleText = "CATCH THE DROPLET";
-        float titleX = Settings.WINDOW_WIDTH / 2f - 150f; // approximate centering
-        float titleY = Settings.WINDOW_HEIGHT * 0.66f;
+        float titleX = Settings.windowWidth / 2f - 150f; // approximate centering
+        float titleY = Settings.windowHeight * 0.66f;
         titleDisplay = new TextDisplay(titleText, titleX, titleY, 2.0f);
 
         // 3. create prompt text (normal size, centred at middle)
         String promptText = "Press SPACE to start";
-        float promptX = Settings.WINDOW_WIDTH / 2f - 100f; // approximate centering
-        float promptY = Settings.WINDOW_HEIGHT * 0.5f;
+        float promptX = Settings.windowWidth / 2f - 100f; // approximate centering
+        float promptY = Settings.windowHeight * 0.5f;
         promptDisplay = new TextDisplay(promptText, promptX, promptY, 1.0f);
     }
 
@@ -73,11 +73,13 @@ public class MenuScene extends Scene {
 
     @Override
     public void submitRenderable(SceneContext context) {
+        IRenderQueue renderQueue = context.get(IRenderQueue.class);
+
         // queue background first
-        context.get(IRenderQueue.class).queue(background);
+        renderQueue.queue(background);
 
         // queue text displays
-        context.get(IRenderQueue.class).queue(titleDisplay);
-        context.get(IRenderQueue.class).queue(promptDisplay);
+        renderQueue.queue(titleDisplay);
+        renderQueue.queue(promptDisplay);
     }
 }

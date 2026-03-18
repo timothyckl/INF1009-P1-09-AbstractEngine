@@ -11,13 +11,13 @@ package com.p1_7.demo;
 public class Settings {
 
     /** width of the application window in pixels */
-    public static int WINDOW_WIDTH = 640;
+    public static int windowWidth = 640;
 
     /** height of the application window in pixels */
-    public static int WINDOW_HEIGHT = 480;
+    public static int windowHeight = 480;
 
     /** music volume level (0.0 = silent, 1.0 = maximum) */
-    public static float MUSIC_VOLUME = 0.5f; // default 50% volume
+    public static float musicVolume = 0.5f;
 
     /**
      * sets the music volume with validation.
@@ -26,6 +26,6 @@ public class Settings {
      * @param volume the desired volume level
      */
     public static void setMusicVolume(float volume) {
-        MUSIC_VOLUME = Math.max(0f, Math.min(1f, volume));
+        musicVolume = Math.max(0f, Math.min(1f, volume));
     }
 }

@@ -18,7 +18,7 @@ import com.p1_7.demo.platform.GdxShapeRenderer;
  *
  * responds to LEFT/RIGHT arrow keys to adjust volume in 0.1 increments.
  * renders as a horizontal bar with filled portion representing current volume.
- * updates Settings.MUSIC_VOLUME when changed.
+ * updates Settings.musicVolume when changed.
  */
 public class VolumeSlider extends Entity implements IRenderItem, ICustomRenderable {
 
@@ -46,7 +46,7 @@ public class VolumeSlider extends Entity implements IRenderItem, ICustomRenderab
         this.width = width;
         this.height = 20f;
         this.transform = new Transform2D(x, y, width, height);
-        this.value = Settings.MUSIC_VOLUME;
+        this.value = Settings.musicVolume;
     }
 
     /**

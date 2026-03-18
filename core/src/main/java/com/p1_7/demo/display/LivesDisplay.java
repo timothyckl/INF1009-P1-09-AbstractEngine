@@ -20,7 +20,7 @@ public class LivesDisplay extends BaseTextDisplay {
      */
     public LivesDisplay(int initialLives) {
         // position at top-left corner with 100x20 size and 1.0 scale
-        super(10f, Settings.WINDOW_HEIGHT - 10f, 100f, 20f, 1.0f);
+        super(10f, Settings.windowHeight - 10f, 100f, 20f, 1.0f);
         this.lives = initialLives;
     }
 
