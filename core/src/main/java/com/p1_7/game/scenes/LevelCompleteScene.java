@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.p1_7.abstractengine.entity.Entity;
+import com.p1_7.abstractengine.input.IInputManager;
 import com.p1_7.abstractengine.render.IDrawContext;
 import com.p1_7.abstractengine.render.IRenderable;
 import com.p1_7.abstractengine.render.IRenderQueue;
@@ -17,6 +18,7 @@ import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.game.Settings;
 import com.p1_7.game.core.Transform2D;
 import com.p1_7.game.entities.MenuButton;
+import com.p1_7.game.input.ICursorSource;
 import com.p1_7.game.platform.GdxDrawContext;
 
 public class LevelCompleteScene extends Scene {
@@ -28,6 +30,9 @@ public class LevelCompleteScene extends Scene {
     private static final String HOVER_ASSET = "menu/button_hover.png";
     private static final String TTF_ASSET = "menu/Kenney_Future.ttf";
 
+    // ── input ────────────────────────────────────────────────────
+    private ICursorSource cursorSource;
+
     private BitmapFont titleFont;
     private BitmapFont promptFont;
     private BitmapFont buttonFont;
@@ -36,8 +41,8 @@ public class LevelCompleteScene extends Scene {
     private LabelText promptStatus;
     private LabelText hintSpace;
     private LabelText hintEsc;
-    private MenuButton btnContinue;
-    private MenuButton btnMainMenu;
+    private MenuButton continueButton;
+    private MenuButton mainMenuButton;
     private int currentLevel = 1;
     private float inputCooldown;
 
@@ -73,6 +78,9 @@ public class LevelCompleteScene extends Scene {
 
         generator.dispose();
 
+        IInputManager inputManager = context.get(IInputManager.class);
+        cursorSource = inputManager.getExtension(ICursorSource.class);
+
         float cx = Settings.getWindowWidth() / 2f;
         float cy = Settings.getWindowHeight() / 2f;
         boolean lastLevel = isLastLevel();
@@ -82,8 +90,8 @@ public class LevelCompleteScene extends Scene {
         background = new Background(BG_ASSET);
         title = new LabelText("LEVEL " + currentLevel + " COMPLETE!", cx, cy + 120f, titleFont);
         promptStatus = new LabelText("Next up: Level " + nextLevel, cx, cy + 55f, promptFont);
-        btnContinue = MenuButton.withTexture(continueLabel, cx, cy - 10f, buttonFont, BTN_ASSET, HOVER_ASSET);
-        btnMainMenu = MenuButton.withTexture("MAIN MENU", cx, cy - 85f, buttonFont, BTN_ASSET, HOVER_ASSET);
+        continueButton = MenuButton.withTexture(continueLabel, cx, cy - 10f, buttonFont, BTN_ASSET, HOVER_ASSET);
+        mainMenuButton = MenuButton.withTexture("MAIN MENU", cx, cy - 85f, buttonFont, BTN_ASSET, HOVER_ASSET);
         hintSpace = new LabelText(spaceHint, cx, cy - 175f, promptFont);
         hintEsc = new LabelText("ESC - Main Menu", cx, cy - 220f, promptFont);
 
@@ -92,11 +100,12 @@ public class LevelCompleteScene extends Scene {
 
     @Override
     public void onExit(SceneContext context) {
-        if (btnContinue != null) btnContinue.dispose();
-        if (btnMainMenu != null) btnMainMenu.dispose();
-        if (titleFont != null) titleFont.dispose();
-        if (promptFont != null) promptFont.dispose();
-        if (buttonFont != null) buttonFont.dispose();
+        if (continueButton != null) continueButton.dispose();
+        if (mainMenuButton != null) mainMenuButton.dispose();
+        if (titleFont      != null) titleFont.dispose();
+        if (promptFont     != null) promptFont.dispose();
+        if (buttonFont     != null) buttonFont.dispose();
+        cursorSource = null;
     }
 
     @Override
@@ -106,17 +115,18 @@ public class LevelCompleteScene extends Scene {
             return;
         }
 
-        btnContinue.updateInput();
-        btnMainMenu.updateInput();
+        if (cursorSource == null) return;
+        continueButton.updateInput(cursorSource);
+        mainMenuButton.updateInput(cursorSource);
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || btnMainMenu.isClicked()) {
-            btnMainMenu.resetClick();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE) || mainMenuButton.isClicked()) {
+            mainMenuButton.resetClick();
             context.changeScene("menu");
             return;
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || btnContinue.isClicked()) {
-            btnContinue.resetClick();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || continueButton.isClicked()) {
+            continueButton.resetClick();
             if (isLastLevel()) {
                 currentLevel = 1;
             } else {
@@ -131,8 +141,8 @@ public class LevelCompleteScene extends Scene {
         renderQueue.queue(background);
         renderQueue.queue(title);
         renderQueue.queue(promptStatus);
-        renderQueue.queue(btnContinue);
-        renderQueue.queue(btnMainMenu);
+        renderQueue.queue(continueButton);
+        renderQueue.queue(mainMenuButton);
         renderQueue.queue(hintSpace);
         renderQueue.queue(hintEsc);
     }

@@ -8,8 +8,10 @@ import com.p1_7.abstractengine.entity.EntityManager;
 import com.p1_7.abstractengine.input.InputManager;
 import com.p1_7.abstractengine.scene.SceneManager;
 
+import com.p1_7.game.input.ICursorSource;
 import com.p1_7.game.managers.AudioManager;
 import com.p1_7.game.managers.IAudioManager;
+import com.p1_7.game.platform.GdxCursorSource;
 import com.p1_7.game.platform.GdxInputSource;
 import com.p1_7.game.platform.GdxRenderManager;
 import com.p1_7.game.scenes.LevelCompleteScene;
@@ -37,10 +39,15 @@ public class Main extends ApplicationAdapter {
 
         AudioManager audioManager = new AudioManager();
 
+        // build and configure the input manager before handing it to the engine
+        // so extensions are available to scenes from the first frame
+        InputManager inputManager = new InputManager(new GdxInputSource());
+        inputManager.registerExtension(ICursorSource.class, new GdxCursorSource());
+
         // core managers, registration order does not matter;
         // engine reorders managers via topological sort on a directed acyclic graph.
         engine.registerManager(new EntityManager());
-        engine.registerManager(new InputManager(new GdxInputSource()));
+        engine.registerManager(inputManager);
         engine.registerManager(new GdxRenderManager());
         engine.registerManager(audioManager);
 

@@ -28,6 +28,9 @@ public class InputManager extends UpdatableManager implements IInputManager {
     /** whether each action was physically down last frame */
     private final Map<ActionId, Boolean> previousDown = new HashMap<>();
 
+    /** registered game-layer input extensions, keyed by their interface type */
+    private final Map<Class<?>, IInputExtension> extensions = new HashMap<>();
+
     /**
      * creates an input manager backed by the given platform input source.
      *
@@ -179,6 +182,53 @@ public class InputManager extends UpdatableManager implements IInputManager {
     @Override
     public List<Integer> getButtonsForAction(ActionId actionId) {
         return inputMapping.getButtonsForAction(actionId);
+    }
+
+    /**
+     * registers an input extension under its interface type.
+     * the type parameter acts as the registry key so the same object can be
+     * retrieved later via getExtension().
+     *
+     * @param type      the interface class used as the registry key
+     * @param extension the extension implementation
+     * @throws IllegalArgumentException if type or extension is null
+     */
+    @Override
+    public <T extends IInputExtension> void registerExtension(Class<T> type, T extension) {
+        if (type == null || extension == null) {
+            throw new IllegalArgumentException("type and extension must not be null");
+        }
+        extensions.put(type, extension);
+    }
+
+    /**
+     * retrieves a previously registered input extension.
+     * the unchecked cast is safe because registerExtension() enforces the
+     * type relationship at registration time.
+     *
+     * @param type the interface class used as the registry key
+     * @return the registered extension cast to T
+     * @throws IllegalArgumentException if no extension is registered for type
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends IInputExtension> T getExtension(Class<T> type) {
+        IInputExtension ext = extensions.get(type);
+        if (ext == null) {
+            throw new IllegalArgumentException("no extension registered for: " + type.getName());
+        }
+        return (T) ext;
+    }
+
+    /**
+     * returns whether an extension has been registered for the given type.
+     *
+     * @param type the interface class to check
+     * @return true if an extension is registered
+     */
+    @Override
+    public <T extends IInputExtension> boolean hasExtension(Class<T> type) {
+        return extensions.containsKey(type);
     }
 
     /**

@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.p1_7.abstractengine.entity.Entity;
+import com.p1_7.abstractengine.input.IInputManager;
 import com.p1_7.abstractengine.render.IDrawContext;
 import com.p1_7.abstractengine.render.IRenderable;
 import com.p1_7.abstractengine.render.IRenderQueue;
@@ -17,6 +18,7 @@ import com.p1_7.abstractengine.scene.SceneContext;
 import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.game.Settings;
 import com.p1_7.game.core.Transform2D;
+import com.p1_7.game.input.ICursorSource;
 import com.p1_7.game.managers.IAudioManager;
 import com.p1_7.game.entities.MenuButton;
 import com.p1_7.game.platform.GdxDrawContext;
@@ -50,15 +52,18 @@ public class SettingScene extends Scene {
     private BitmapFont buttonFont;
 
     // ── entities ─────────────────────────────────────────────────
+    // ── input ────────────────────────────────────────────────────
+    private ICursorSource cursorSource;
+
     /** audio manager resolved once on scene entry */
     private IAudioManager      audio;
 
     private SettingsBackground background;
     private LabelText          heading;
     private LabelText          volumeLabel;
-    private MenuButton         btnVolumeDown;
-    private MenuButton         btnVolumeUp;
-    private MenuButton         btnBack;
+    private MenuButton         volumeDownButton;
+    private MenuButton         volumeUpButton;
+    private MenuButton         backButton;
 
     public SettingScene() {
         this.name = "settings";
@@ -94,6 +99,9 @@ public class SettingScene extends Scene {
 
         generator.dispose(); // safe to dispose after generating all fonts
 
+        IInputManager inputManager = context.get(IInputManager.class);
+        cursorSource = inputManager.getExtension(ICursorSource.class);
+
         audio = context.get(IAudioManager.class);
 
         // ── entities ─────────────────────────────────────────────
@@ -103,21 +111,22 @@ public class SettingScene extends Scene {
         volumeLabel = new LabelText(volumeText(audio), centreX, centreY + 60f,
                                     labelFont);
 
-        btnVolumeDown = MenuButton.withTexture("-",    centreX - 170f, centreY - 10f,  buttonFont, BTN_ASSET, HOVER_ASSET);
-        btnVolumeUp   = MenuButton.withTexture("+",    centreX + 170f, centreY - 10f,  buttonFont, BTN_ASSET, HOVER_ASSET);
-        btnBack       = MenuButton.withTexture("BACK", centreX,        centreY - 120f, buttonFont, BTN_ASSET, HOVER_ASSET);
+        volumeDownButton = MenuButton.withTexture("-",    centreX - 170f, centreY - 10f,  buttonFont, BTN_ASSET, HOVER_ASSET);
+        volumeUpButton   = MenuButton.withTexture("+",    centreX + 170f, centreY - 10f,  buttonFont, BTN_ASSET, HOVER_ASSET);
+        backButton       = MenuButton.withTexture("BACK", centreX,        centreY - 120f, buttonFont, BTN_ASSET, HOVER_ASSET);
     }
 
     @Override
     public void onExit(SceneContext context) {
-        if (btnVolumeDown != null) btnVolumeDown.dispose();
-        if (btnVolumeUp   != null) btnVolumeUp.dispose();
-        if (btnBack       != null) btnBack.dispose();
-        if (background    != null) background.dispose();
-        if (headingFont   != null) headingFont.dispose();
-        if (labelFont     != null) labelFont.dispose();
-        if (buttonFont    != null) buttonFont.dispose();
+        if (volumeDownButton != null) volumeDownButton.dispose();
+        if (volumeUpButton   != null) volumeUpButton.dispose();
+        if (backButton       != null) backButton.dispose();
+        if (background       != null) background.dispose();
+        if (headingFont      != null) headingFont.dispose();
+        if (labelFont        != null) labelFont.dispose();
+        if (buttonFont       != null) buttonFont.dispose();
         audio = null;
+        cursorSource = null;
     }
 
     @Override
@@ -128,22 +137,23 @@ public class SettingScene extends Scene {
             return;
         }
 
-        btnVolumeDown.updateInput();
-        btnVolumeUp.updateInput();
-        btnBack.updateInput();
+        if (cursorSource == null) return;
+        volumeDownButton.updateInput(cursorSource);
+        volumeUpButton.updateInput(cursorSource);
+        backButton.updateInput(cursorSource);
 
-        if (btnVolumeDown.isClicked()) {
-            btnVolumeDown.resetClick();
+        if (volumeDownButton.isClicked()) {
+            volumeDownButton.resetClick();
             audio.setMusicVolume(audio.getMusicVolume() - 0.1f);
             volumeLabel.setText(volumeText(audio));
         }
-        if (btnVolumeUp.isClicked()) {
-            btnVolumeUp.resetClick();
+        if (volumeUpButton.isClicked()) {
+            volumeUpButton.resetClick();
             audio.setMusicVolume(audio.getMusicVolume() + 0.1f);
             volumeLabel.setText(volumeText(audio));
         }
-        if (btnBack.isClicked()) {
-            btnBack.resetClick();
+        if (backButton.isClicked()) {
+            backButton.resetClick();
             context.changeScene("menu");
         }
     }
@@ -153,9 +163,9 @@ public class SettingScene extends Scene {
         renderQueue.queue(background);
         renderQueue.queue(heading);
         renderQueue.queue(volumeLabel);
-        renderQueue.queue(btnVolumeDown);
-        renderQueue.queue(btnVolumeUp);
-        renderQueue.queue(btnBack);
+        renderQueue.queue(volumeDownButton);
+        renderQueue.queue(volumeUpButton);
+        renderQueue.queue(backButton);
     }
 
     private String volumeText(IAudioManager audio) {
