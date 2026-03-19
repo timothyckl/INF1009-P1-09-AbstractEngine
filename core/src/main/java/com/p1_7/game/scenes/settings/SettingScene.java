@@ -16,7 +16,6 @@ import com.p1_7.abstractengine.input.InputState;
 import com.p1_7.abstractengine.render.IRenderQueue;
 import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
-import com.p1_7.game.GameFonts;
 import com.p1_7.game.Settings;
 import com.p1_7.game.entities.BackgroundImage;
 import com.p1_7.game.entities.BrightnessOverlay;
@@ -26,6 +25,7 @@ import com.p1_7.game.entities.Text;
 import com.p1_7.game.input.GameActions;
 import com.p1_7.game.input.ICursorSource;
 import com.p1_7.game.managers.IAudioManager;
+import com.p1_7.game.managers.IFontManager;
 
 /**
  * Settings scene for Math Quest Maze.
@@ -48,6 +48,7 @@ public class SettingScene extends Scene {
     private IInputQuery inputQuery;
     private IInputManager inputManager;
     private InputProcessor previousInputProcessor;
+    private IFontManager fontManager;
     private final InputProcessor remapInputProcessor = new InputAdapter() {
         @Override
         public boolean keyDown(int keycode) {
@@ -147,13 +148,14 @@ public class SettingScene extends Scene {
         inputManager = context.get(IInputManager.class);
         inputQuery = context.get(IInputQuery.class);
         audio = context.get(IAudioManager.class);
+        fontManager = context.get(IFontManager.class);
     }
 
     private void createFonts() {
-        headingFont = GameFonts.createGoldDisplayFont(52);
-        labelFont = GameFonts.createDarkTextFont(28);
-        tableFont = GameFonts.createDarkTextFont(22);
-        buttonFont = GameFonts.createDarkTextFont(26);
+        headingFont = fontManager.getGoldDisplayFont(52);
+        labelFont = fontManager.getDarkTextFont(28);
+        tableFont = fontManager.getDarkTextFont(22);
+        buttonFont = fontManager.getDarkTextFont(26);
     }
 
     private void createSceneComponents() {
@@ -241,7 +243,6 @@ public class SettingScene extends Scene {
     }
 
     private void disposeFonts() {
-        GameFonts.dispose(headingFont, labelFont, tableFont, buttonFont);
         headingFont = null;
         labelFont = null;
         tableFont = null;
@@ -253,6 +254,7 @@ public class SettingScene extends Scene {
         cursorSource = null;
         inputQuery = null;
         inputManager = null;
+        fontManager = null;
         previousInputProcessor = null;
     }
 

@@ -8,7 +8,6 @@ import com.p1_7.abstractengine.input.InputState;
 import com.p1_7.abstractengine.render.IRenderQueue;
 import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
-import com.p1_7.game.GameFonts;
 import com.p1_7.game.Settings;
 import com.p1_7.game.entities.BackgroundImage;
 import com.p1_7.game.entities.BrightnessOverlay;
@@ -16,6 +15,7 @@ import com.p1_7.game.entities.MenuButton;
 import com.p1_7.game.entities.Text;
 import com.p1_7.game.input.GameActions;
 import com.p1_7.game.input.ICursorSource;
+import com.p1_7.game.managers.IFontManager;
 
 public class LevelCompleteScene extends Scene {
 
@@ -49,9 +49,10 @@ public class LevelCompleteScene extends Scene {
 
     @Override
     public void onEnter(SceneContext context) {
-        titleFont = GameFonts.createGoldDisplayFont(54);
-        promptFont = GameFonts.createPromptFont();
-        buttonFont = GameFonts.createDarkTextFont(22);
+        IFontManager fontManager = context.get(IFontManager.class);
+        titleFont = fontManager.getGoldDisplayFont(54);
+        promptFont = fontManager.getPromptFont();
+        buttonFont = fontManager.getDarkTextFont(22);
 
         IInputExtensionRegistry inputRegistry = context.get(IInputExtensionRegistry.class);
         inputQuery = context.get(IInputQuery.class);
@@ -83,7 +84,6 @@ public class LevelCompleteScene extends Scene {
         if (continueButton != null) continueButton.dispose();
         if (mainMenuButton != null) mainMenuButton.dispose();
         if (brightnessOverlay != null) brightnessOverlay.dispose();
-        GameFonts.dispose(titleFont, promptFont, buttonFont);
         titleFont = null;
         promptFont = null;
         buttonFont = null;

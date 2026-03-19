@@ -2,7 +2,6 @@ package com.p1_7.game.scenes;
 
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.Gdx;
-import com.p1_7.game.GameFonts;
 import com.p1_7.abstractengine.input.IInputExtensionRegistry;
 import com.p1_7.abstractengine.input.IInputQuery;
 import com.p1_7.abstractengine.input.InputState;
@@ -16,6 +15,7 @@ import com.p1_7.game.entities.Text;
 import com.p1_7.game.input.GameActions;
 import com.p1_7.game.input.ICursorSource;
 import com.p1_7.game.managers.IAudioManager;
+import com.p1_7.game.managers.IFontManager;
 import com.p1_7.game.entities.MenuButton;
 
 /**
@@ -77,12 +77,13 @@ public class MenuScene extends Scene {
         // cursorSource stays null if not registered; update() guard handles it cleanly
 
         IAudioManager audio = context.get(IAudioManager.class);
+        IFontManager fontManager = context.get(IFontManager.class);
 
         // start background music (asset pre-loaded in AudioManager.onInit)
         audio.playMusic("bgMusic", true);
 
-        titleFont = GameFonts.createGoldDisplayFont(56);
-        buttonFont = GameFonts.createDarkTextFont(26);
+        titleFont = fontManager.getGoldDisplayFont(56);
+        buttonFont = fontManager.getDarkTextFont(26);
 
         // ── entities ─────────────────────────────────────────────
         background = new BackgroundImage(BG_ASSET);
@@ -104,7 +105,6 @@ public class MenuScene extends Scene {
         if (settingsButton != null) settingsButton.dispose();
         if (exitButton     != null) exitButton.dispose();
         if (brightnessOverlay != null) brightnessOverlay.dispose();
-        GameFonts.dispose(titleFont, buttonFont);
         titleFont = null;
         buttonFont = null;
         inputQuery = null;

@@ -12,6 +12,8 @@ import com.p1_7.game.input.GameActions;
 import com.p1_7.game.input.ICursorSource;
 import com.p1_7.game.managers.AudioManager;
 import com.p1_7.game.managers.IAudioManager;
+import com.p1_7.game.managers.FontManager;
+import com.p1_7.game.managers.IFontManager;
 import com.p1_7.game.platform.GdxCursorSource;
 import com.p1_7.game.platform.GdxInputSource;
 import com.p1_7.game.platform.GdxRenderManager;
@@ -39,6 +41,7 @@ public class Main extends ApplicationAdapter {
         engine = new Engine();
 
         AudioManager audioManager = new AudioManager();
+        FontManager fontManager = new FontManager();
 
         // build and configure the input manager before handing it to the engine
         // so extensions are available to scenes from the first frame
@@ -52,10 +55,12 @@ public class Main extends ApplicationAdapter {
         engine.registerManager(inputManager);
         engine.registerManager(new GdxRenderManager());
         engine.registerManager(audioManager);
+        engine.registerManager(fontManager);
 
         // scene setup
         SceneManager sceneManager = new SceneManager();
         sceneManager.registerService(IAudioManager.class, audioManager);
+        sceneManager.registerService(IFontManager.class, fontManager);
 
         // main menu (shown first)
         sceneManager.registerScene(new MenuScene());
