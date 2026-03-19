@@ -20,6 +20,7 @@ import com.p1_7.abstractengine.render.IRenderQueue;
 import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
 import com.p1_7.game.Settings;
+import com.p1_7.game.entities.BackgroundImage;
 import com.p1_7.game.entities.BrightnessOverlay;
 import com.p1_7.game.entities.BrightnessSlider;
 import com.p1_7.game.entities.LabelText;
@@ -67,7 +68,7 @@ public class SettingScene extends Scene {
 
     private IAudioManager audio;
 
-    private SettingsBackground background;
+    private BackgroundImage background;
     private LabelText heading;
     private LabelText volumeLabel;
     private VolumeSlider volumeSlider;
@@ -208,7 +209,7 @@ public class SettingScene extends Scene {
         float volumeLabelY = volumeSliderY + 50f;
         float headingY = volumeLabelY + 66f;
 
-        background = new SettingsBackground(BG_ASSET);
+        background = new BackgroundImage(BG_ASSET);
         heading = createCenteredLabel("SETTINGS", headingY, headingFont);
         volumeLabel = createCenteredLabel(volumeText(), volumeLabelY, labelFont);
         brightnessLabel = createCenteredLabel(brightnessText(), brightnessLabelY, labelFont);
@@ -263,10 +264,6 @@ public class SettingScene extends Scene {
         if (brightnessOverlay != null) {
             brightnessOverlay.dispose();
         }
-        if (background != null) {
-            background.dispose();
-        }
-
         background = null;
         heading = null;
         volumeLabel = null;
