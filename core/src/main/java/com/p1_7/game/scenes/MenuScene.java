@@ -2,7 +2,6 @@ package com.p1_7.game.scenes;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
@@ -19,6 +18,7 @@ import com.p1_7.abstractengine.scene.SceneContext;
 import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.game.Settings;
 import com.p1_7.game.core.Transform2D;
+import com.p1_7.game.entities.BackgroundImage;
 import com.p1_7.game.entities.BrightnessOverlay;
 import com.p1_7.game.input.GameActions;
 import com.p1_7.game.input.ICursorSource;
@@ -61,7 +61,7 @@ public class MenuScene extends Scene {
     private IInputQuery inputQuery;
 
     // ── entities ─────────────────────────────────────────────────
-    private MenuBackground background;
+    private BackgroundImage background;
     private TitleText      titleText;
     private MenuButton     startButton;
     private MenuButton     settingsButton;
@@ -113,7 +113,7 @@ public class MenuScene extends Scene {
         generator.dispose();
 
         // ── entities ─────────────────────────────────────────────
-        background = new MenuBackground(BG_ASSET);
+        background = new BackgroundImage(BG_ASSET);
         titleText  = new TitleText("MATH QUEST MAZE", centreX,
                                    Settings.getWindowHeight() * 0.75f, titleFont);
 
@@ -132,7 +132,6 @@ public class MenuScene extends Scene {
         if (settingsButton != null) settingsButton.dispose();
         if (exitButton     != null) exitButton.dispose();
         if (brightnessOverlay != null) brightnessOverlay.dispose();
-        if (background  != null) background.dispose();
         if (titleFont   != null) titleFont.dispose();
         if (buttonFont  != null) buttonFont.dispose();
         inputQuery = null;
@@ -178,32 +177,6 @@ public class MenuScene extends Scene {
     }
 
     // ── inner entities ────────────────────────────────────────────
-
-    private static class MenuBackground implements IRenderable {
-        private final Transform2D transform;
-        private final String      assetPath;
-        private final Texture     texture;
-
-        MenuBackground(String assetPath) {
-            this.assetPath = assetPath;
-            this.texture   = new Texture(Gdx.files.internal(assetPath));
-            this.texture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-            this.transform = new Transform2D(0, 0, Settings.getWindowWidth(), Settings.getWindowHeight());
-        }
-
-        @Override public String     getAssetPath() { return assetPath; }
-        @Override public ITransform getTransform() { return transform; }
-
-        @Override
-        public void render(IDrawContext ctx) {
-            GdxDrawContext gdxCtx = (GdxDrawContext) ctx;
-            gdxCtx.drawTexture(assetPath,
-                transform.getPosition(0), transform.getPosition(1),
-                transform.getSize(0),     transform.getSize(1));
-        }
-
-        void dispose() { if (texture != null) texture.dispose(); }
-    }
 
     private static class TitleText extends Entity implements IRenderable {
         private final Transform2D transform;

@@ -8,20 +8,16 @@ import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFont
 import com.p1_7.abstractengine.input.IInputExtensionRegistry;
 import com.p1_7.abstractengine.input.IInputQuery;
 import com.p1_7.abstractengine.input.InputState;
-import com.p1_7.abstractengine.render.IDrawContext;
-import com.p1_7.abstractengine.render.IRenderable;
 import com.p1_7.abstractengine.render.IRenderQueue;
 import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
-import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.game.Settings;
-import com.p1_7.game.core.Transform2D;
+import com.p1_7.game.entities.BackgroundImage;
 import com.p1_7.game.entities.BrightnessOverlay;
 import com.p1_7.game.entities.LabelText;
 import com.p1_7.game.entities.MenuButton;
 import com.p1_7.game.input.GameActions;
 import com.p1_7.game.input.ICursorSource;
-import com.p1_7.game.platform.GdxDrawContext;
 
 public class LevelCompleteScene extends Scene {
 
@@ -39,7 +35,7 @@ public class LevelCompleteScene extends Scene {
     private BitmapFont titleFont;
     private BitmapFont promptFont;
     private BitmapFont buttonFont;
-    private Background background;
+    private BackgroundImage background;
     private LabelText title;
     private LabelText promptStatus;
     private LabelText hintSpace;
@@ -95,7 +91,7 @@ public class LevelCompleteScene extends Scene {
         int nextLevel = lastLevel ? 1 : currentLevel + 1;
         String continueLabel = lastLevel ? "PLAY AGAIN" : "CONTINUE";
         String spaceHint = lastLevel ? "SPACE - Play Again" : "SPACE - Continue";
-        background = new Background(BG_ASSET);
+        background = new BackgroundImage(BG_ASSET);
         title = new LabelText("LEVEL " + currentLevel + " COMPLETE!", cx, cy + 120f, titleFont);
         promptStatus = new LabelText("Next up: Level " + nextLevel, cx, cy + 55f, promptFont);
         continueButton = MenuButton.withTexture(continueLabel, cx, cy - 10f, buttonFont, BTN_ASSET, HOVER_ASSET);
@@ -166,26 +162,5 @@ public class LevelCompleteScene extends Scene {
 
     private boolean isLastLevel() {
         return currentLevel >= MAX_LEVEL;
-    }
-
-    private static class Background implements IRenderable {
-        private final Transform2D transform;
-        private final String assetPath;
-
-        Background(String assetPath) {
-            this.assetPath = assetPath;
-            this.transform = new Transform2D(0, 0, Settings.getWindowWidth(), Settings.getWindowHeight());
-        }
-
-        @Override public String     getAssetPath() { return assetPath; }
-        @Override public ITransform getTransform() { return transform; }
-
-        @Override
-        public void render(IDrawContext ctx) {
-            GdxDrawContext gdxCtx = (GdxDrawContext) ctx;
-            gdxCtx.drawTexture(assetPath,
-                transform.getPosition(0), transform.getPosition(1),
-                transform.getSize(0),     transform.getSize(1));
-        }
     }
 }
