@@ -42,9 +42,9 @@ public class Main extends ApplicationAdapter {
 
         // build and configure the input manager before handing it to the engine
         // so extensions are available to scenes from the first frame
-        InputManager inputManager = new InputManager(new GdxInputSource());
+        InputManager inputManager =
+            new InputManager(new GdxInputSource(), GameActions.getDefaultBindings());
         inputManager.registerExtension(ICursorSource.class, new GdxCursorSource());
-        GameActions.bindDefaults(inputManager);
 
         // core managers, registration order does not matter;
         // engine reorders managers via topological sort on a directed acyclic graph.

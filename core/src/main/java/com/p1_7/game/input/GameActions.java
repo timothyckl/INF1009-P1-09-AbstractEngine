@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.badlogic.gdx.Input;
 import com.p1_7.abstractengine.input.ActionId;
-import com.p1_7.abstractengine.input.IInputManager;
+import com.p1_7.abstractengine.input.InputBindingSpec;
 
 /**
  * Canonical remappable game actions and their default keyboard bindings.
@@ -32,16 +32,20 @@ public final class GameActions {
     }
 
     /**
-     * Applies the default movement bindings to the given input manager.
+     * Returns the default movement bindings in an engine-level format that can
+     * be applied by InputManager during construction.
      *
-     * @param inputManager the input manager to seed with defaults
+     * @return immutable engine-level default bindings
      */
-    public static void bindDefaults(IInputManager inputManager) {
+    public static List<InputBindingSpec> getDefaultBindings() {
+        List<InputBindingSpec> bindings = new ArrayList<>();
         for (int i = 0; i < MOVEMENT_BINDINGS.size(); i++) {
             BindingSpec binding = MOVEMENT_BINDINGS.get(i);
-            inputManager.bindKey(binding.getPrimaryKeyCode(), binding.getActionId());
-            inputManager.bindKey(binding.getAlternateKeyCode(), binding.getActionId());
+            bindings.add(InputBindingSpec.keys(binding.getActionId(),
+                binding.getPrimaryKeyCode(),
+                binding.getAlternateKeyCode()));
         }
+        return Collections.unmodifiableList(bindings);
     }
 
     private static List<BindingSpec> createMovementBindings() {
