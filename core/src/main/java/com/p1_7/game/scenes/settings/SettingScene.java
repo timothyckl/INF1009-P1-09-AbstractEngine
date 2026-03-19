@@ -466,7 +466,7 @@ public class SettingScene extends Scene {
             return;
         }
 
-        String reservedUiKeyMessage = GameActions.getReservedUiKeyMessage(keyCode);
+        String reservedUiKeyMessage = getReservedUiKeyMessage(keyCode);
         if (reservedUiKeyMessage != null) {
             remapHint.setText(reservedUiKeyMessage);
             refreshRemapVisualState();
@@ -500,6 +500,16 @@ public class SettingScene extends Scene {
 
         syncRemapBindings();
         stopListening();
+    }
+
+    private String getReservedUiKeyMessage(int keyCode) {
+        if (keyCode == Input.Keys.SPACE) {
+            return Input.Keys.toString(keyCode) + " is reserved for menu confirm";
+        }
+        if (keyCode == Input.Keys.ESCAPE || keyCode == Input.Keys.BACKSPACE) {
+            return Input.Keys.toString(keyCode) + " is reserved for menu back";
+        }
+        return null;
     }
 
     private void syncRemapBindings() {

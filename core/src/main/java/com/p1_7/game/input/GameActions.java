@@ -57,23 +57,6 @@ public final class GameActions {
         return Collections.unmodifiableList(bindings);
     }
 
-    /**
-     * Returns the on-screen reservation message for hidden UI keys that should
-     * not be reassigned through the movement remap table.
-     *
-     * @param keyCode the attempted key code
-     * @return reservation message, or null when the key is not reserved
-     */
-    public static String getReservedUiKeyMessage(int keyCode) {
-        for (int i = 0; i < UI_BINDINGS.size(); i++) {
-            UiBindingSpec binding = UI_BINDINGS.get(i);
-            if (binding.hasKeyCode(keyCode)) {
-                return Input.Keys.toString(keyCode) + " is reserved for " + binding.getLabel();
-            }
-        }
-        return null;
-    }
-
     private static List<BindingSpec> createMovementBindings() {
         List<BindingSpec> bindings = new ArrayList<>();
         bindings.add(new BindingSpec("Move Up", MOVE_UP, Input.Keys.W, Input.Keys.UP));
@@ -153,15 +136,6 @@ public final class GameActions {
             }
             return new UiBindingSpec(label, actionId, Collections.<Integer>emptyList(), codes);
         }
-
-        private String getLabel() {
-            return label;
-        }
-
-        private boolean hasKeyCode(int keyCode) {
-            return keyCodes.contains(keyCode);
-        }
-
         private InputBindingSpec toInputBindingSpec() {
             return new InputBindingSpec(actionId, keyCodes, buttonCodes);
         }
