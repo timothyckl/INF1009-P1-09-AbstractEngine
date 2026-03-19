@@ -8,10 +8,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
 import com.p1_7.abstractengine.input.IInputExtensionRegistry;
 import com.p1_7.abstractengine.input.IInputManager;
 import com.p1_7.abstractengine.input.IInputQuery;
@@ -19,6 +16,7 @@ import com.p1_7.abstractengine.input.InputState;
 import com.p1_7.abstractengine.render.IRenderQueue;
 import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
+import com.p1_7.game.GameFonts;
 import com.p1_7.game.Settings;
 import com.p1_7.game.entities.BackgroundImage;
 import com.p1_7.game.entities.BrightnessOverlay;
@@ -37,7 +35,6 @@ public class SettingScene extends Scene {
     private static final String BG_ASSET = "menu/background.png";
     private static final String BTN_ASSET = "menu/button.png";
     private static final String HOVER_ASSET = "menu/button_hover.png";
-    private static final String TTF_ASSET = "menu/Kenney_Future.ttf";
 
     private float centreX;
     private float centreY;
@@ -153,46 +150,10 @@ public class SettingScene extends Scene {
     }
 
     private void createFonts() {
-        FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal(TTF_ASSET));
-        try {
-            headingFont = createHeadingFont(generator);
-            labelFont = createLabelFont(generator);
-            tableFont = createTableFont(generator);
-            buttonFont = createButtonFont(generator);
-        } finally {
-            generator.dispose();
-        }
-    }
-
-    private BitmapFont createHeadingFont(FreeTypeFontGenerator generator) {
-        FreeTypeFontParameter params = new FreeTypeFontParameter();
-        params.size = 52;
-        params.color = new Color(1f, 0.92f, 0.55f, 1f);
-        params.shadowOffsetX = 2;
-        params.shadowOffsetY = -2;
-        params.shadowColor = new Color(0f, 0f, 0f, 0.5f);
-        return generator.generateFont(params);
-    }
-
-    private BitmapFont createLabelFont(FreeTypeFontGenerator generator) {
-        FreeTypeFontParameter params = new FreeTypeFontParameter();
-        params.size = 28;
-        params.color = new Color(0.10f, 0.16f, 0.24f, 1f);
-        return generator.generateFont(params);
-    }
-
-    private BitmapFont createTableFont(FreeTypeFontGenerator generator) {
-        FreeTypeFontParameter params = new FreeTypeFontParameter();
-        params.size = 22;
-        params.color = new Color(0.10f, 0.16f, 0.24f, 1f);
-        return generator.generateFont(params);
-    }
-
-    private BitmapFont createButtonFont(FreeTypeFontGenerator generator) {
-        FreeTypeFontParameter params = new FreeTypeFontParameter();
-        params.size = 26;
-        params.color = new Color(0.10f, 0.16f, 0.24f, 1f);
-        return generator.generateFont(params);
+        headingFont = GameFonts.createGoldDisplayFont(52);
+        labelFont = GameFonts.createDarkTextFont(28);
+        tableFont = GameFonts.createDarkTextFont(22);
+        buttonFont = GameFonts.createDarkTextFont(26);
     }
 
     private void createSceneComponents() {
@@ -280,19 +241,7 @@ public class SettingScene extends Scene {
     }
 
     private void disposeFonts() {
-        if (headingFont != null) {
-            headingFont.dispose();
-        }
-        if (labelFont != null) {
-            labelFont.dispose();
-        }
-        if (tableFont != null) {
-            tableFont.dispose();
-        }
-        if (buttonFont != null) {
-            buttonFont.dispose();
-        }
-
+        GameFonts.dispose(headingFont, labelFont, tableFont, buttonFont);
         headingFont = null;
         labelFont = null;
         tableFont = null;

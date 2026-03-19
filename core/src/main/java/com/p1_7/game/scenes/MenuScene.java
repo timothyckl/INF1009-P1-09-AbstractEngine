@@ -1,10 +1,8 @@
 package com.p1_7.game.scenes;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
-import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator.FreeTypeFontParameter;
+import com.badlogic.gdx.Gdx;
+import com.p1_7.game.GameFonts;
 import com.p1_7.abstractengine.input.IInputExtensionRegistry;
 import com.p1_7.abstractengine.input.IInputQuery;
 import com.p1_7.abstractengine.input.InputState;
@@ -38,7 +36,6 @@ public class MenuScene extends Scene {
     private static final String BG_ASSET    = "menu/background.png";
     private static final String BTN_ASSET   = "menu/button.png";
     private static final String HOVER_ASSET = "menu/button_hover.png";
-    private static final String TTF_ASSET   = "menu/Kenney_Future.ttf";
 
     // ── layout ───────────────────────────────────────────────────
     // computed in onEnter so they reflect the resolution at scene entry time
@@ -84,27 +81,8 @@ public class MenuScene extends Scene {
         // start background music (asset pre-loaded in AudioManager.onInit)
         audio.playMusic("bgMusic", true);
 
-        // ── generate fonts from TTF ──────────────────────────────
-        FreeTypeFontGenerator generator =
-            new FreeTypeFontGenerator(Gdx.files.internal(TTF_ASSET));
-
-        // title font — larger, gold colour
-        FreeTypeFontParameter titleParams = new FreeTypeFontParameter();
-        titleParams.size  = 56;                              // pixel size (not scale)
-        titleParams.color = new Color(1f, 0.92f, 0.55f, 1f); // gold
-        titleParams.shadowOffsetX = 2;
-        titleParams.shadowOffsetY = -2;
-        titleParams.shadowColor   = new Color(0f, 0f, 0f, 0.5f);
-        titleFont = generator.generateFont(titleParams);
-
-        // button font — smaller, white
-        FreeTypeFontParameter buttonParams = new FreeTypeFontParameter();
-        buttonParams.size  = 26;
-        buttonParams.color = new Color(0.10f, 0.16f, 0.24f, 1f);
-        buttonFont = generator.generateFont(buttonParams);
-
-        // generator can be disposed immediately after generating fonts
-        generator.dispose();
+        titleFont = GameFonts.createGoldDisplayFont(56);
+        buttonFont = GameFonts.createDarkTextFont(26);
 
         // ── entities ─────────────────────────────────────────────
         background = new BackgroundImage(BG_ASSET);
@@ -126,8 +104,9 @@ public class MenuScene extends Scene {
         if (settingsButton != null) settingsButton.dispose();
         if (exitButton     != null) exitButton.dispose();
         if (brightnessOverlay != null) brightnessOverlay.dispose();
-        if (titleFont   != null) titleFont.dispose();
-        if (buttonFont  != null) buttonFont.dispose();
+        GameFonts.dispose(titleFont, buttonFont);
+        titleFont = null;
+        buttonFont = null;
         inputQuery = null;
         cursorSource = null;
     }
