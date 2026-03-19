@@ -24,6 +24,7 @@ public final class GameActions {
     public static final ActionId POINTER_PRIMARY = new ActionId("POINTER_PRIMARY");
 
     private static final List<BindingSpec> MOVEMENT_BINDINGS = createMovementBindings();
+    private static final List<UiBindingSpec> UI_BINDINGS = createUiBindings();
 
     private GameActions() { }
 
@@ -50,13 +51,27 @@ public final class GameActions {
                 binding.getPrimaryKeyCode(),
                 binding.getAlternateKeyCode()));
         }
-        bindings.add(InputBindingSpec.keys(MENU_BACK, Input.Keys.ESCAPE, Input.Keys.BACKSPACE));
-        bindings.add(InputBindingSpec.keys(MENU_CONFIRM, Input.Keys.SPACE));
-        bindings.add(new InputBindingSpec(
-            POINTER_PRIMARY,
-            Collections.<Integer>emptyList(),
-            Arrays.asList(Input.Buttons.LEFT)));
+        for (int i = 0; i < UI_BINDINGS.size(); i++) {
+            bindings.add(UI_BINDINGS.get(i).toInputBindingSpec());
+        }
         return Collections.unmodifiableList(bindings);
+    }
+
+    /**
+     * Returns the on-screen reservation message for hidden UI keys that should
+     * not be reassigned through the movement remap table.
+     *
+     * @param keyCode the attempted key code
+     * @return reservation message, or null when the key is not reserved
+     */
+    public static String getReservedUiKeyMessage(int keyCode) {
+        for (int i = 0; i < UI_BINDINGS.size(); i++) {
+            UiBindingSpec binding = UI_BINDINGS.get(i);
+            if (binding.hasKeyCode(keyCode)) {
+                return Input.Keys.toString(keyCode) + " is reserved for " + binding.getLabel();
+            }
+        }
+        return null;
     }
 
     private static List<BindingSpec> createMovementBindings() {
@@ -65,6 +80,14 @@ public final class GameActions {
         bindings.add(new BindingSpec("Move Down", MOVE_DOWN, Input.Keys.S, Input.Keys.DOWN));
         bindings.add(new BindingSpec("Move Left", MOVE_LEFT, Input.Keys.A, Input.Keys.LEFT));
         bindings.add(new BindingSpec("Move Right", MOVE_RIGHT, Input.Keys.D, Input.Keys.RIGHT));
+        return Collections.unmodifiableList(bindings);
+    }
+
+    private static List<UiBindingSpec> createUiBindings() {
+        List<UiBindingSpec> bindings = new ArrayList<>();
+        bindings.add(UiBindingSpec.keys("menu back", MENU_BACK, Input.Keys.ESCAPE, Input.Keys.BACKSPACE));
+        bindings.add(UiBindingSpec.keys("menu confirm", MENU_CONFIRM, Input.Keys.SPACE));
+        bindings.add(UiBindingSpec.buttons("primary click", POINTER_PRIMARY, Input.Buttons.LEFT));
         return Collections.unmodifiableList(bindings);
     }
 
@@ -98,6 +121,49 @@ public final class GameActions {
 
         public int getAlternateKeyCode() {
             return alternateKeyCode;
+        }
+    }
+
+    private static final class UiBindingSpec {
+        private final String label;
+        private final ActionId actionId;
+        private final List<Integer> keyCodes;
+        private final List<Integer> buttonCodes;
+
+        private UiBindingSpec(String label, ActionId actionId, List<Integer> keyCodes,
+                              List<Integer> buttonCodes) {
+            this.label = label;
+            this.actionId = actionId;
+            this.keyCodes = Collections.unmodifiableList(new ArrayList<>(keyCodes));
+            this.buttonCodes = Collections.unmodifiableList(new ArrayList<>(buttonCodes));
+        }
+
+        private static UiBindingSpec keys(String label, ActionId actionId, int... keyCodes) {
+            List<Integer> codes = new ArrayList<>();
+            for (int i = 0; i < keyCodes.length; i++) {
+                codes.add(keyCodes[i]);
+            }
+            return new UiBindingSpec(label, actionId, codes, Collections.<Integer>emptyList());
+        }
+
+        private static UiBindingSpec buttons(String label, ActionId actionId, int... buttonCodes) {
+            List<Integer> codes = new ArrayList<>();
+            for (int i = 0; i < buttonCodes.length; i++) {
+                codes.add(buttonCodes[i]);
+            }
+            return new UiBindingSpec(label, actionId, Collections.<Integer>emptyList(), codes);
+        }
+
+        private String getLabel() {
+            return label;
+        }
+
+        private boolean hasKeyCode(int keyCode) {
+            return keyCodes.contains(keyCode);
+        }
+
+        private InputBindingSpec toInputBindingSpec() {
+            return new InputBindingSpec(actionId, keyCodes, buttonCodes);
         }
     }
 }

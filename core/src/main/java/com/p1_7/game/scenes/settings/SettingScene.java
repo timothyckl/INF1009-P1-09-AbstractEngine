@@ -466,6 +466,13 @@ public class SettingScene extends Scene {
             return;
         }
 
+        String reservedUiKeyMessage = GameActions.getReservedUiKeyMessage(keyCode);
+        if (reservedUiKeyMessage != null) {
+            remapHint.setText(reservedUiKeyMessage);
+            refreshRemapVisualState();
+            return;
+        }
+
         int previousKeyCode = activeRemapSlot.getKeyCode(activeRemapColumn);
         int siblingKeyCode = activeRemapSlot.getOtherKeyCode(activeRemapColumn);
 
