@@ -8,6 +8,7 @@ import com.p1_7.abstractengine.entity.EntityManager;
 import com.p1_7.abstractengine.input.InputManager;
 import com.p1_7.abstractengine.scene.SceneManager;
 
+import com.p1_7.game.input.GameActions;
 import com.p1_7.game.input.ICursorSource;
 import com.p1_7.game.managers.AudioManager;
 import com.p1_7.game.managers.IAudioManager;
@@ -43,6 +44,7 @@ public class Main extends ApplicationAdapter {
         // so extensions are available to scenes from the first frame
         InputManager inputManager = new InputManager(new GdxInputSource());
         inputManager.registerExtension(ICursorSource.class, new GdxCursorSource());
+        GameActions.bindDefaults(inputManager);
 
         // core managers, registration order does not matter;
         // engine reorders managers via topological sort on a directed acyclic graph.
