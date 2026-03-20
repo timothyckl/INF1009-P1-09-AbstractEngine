@@ -43,6 +43,9 @@ public class LabelledRoom {
     /**
      * returns whether this room is the spawn room (i.e. has no label).
      *
+     * this is the exact inverse of hasLabel(); callers should pick one idiom
+     * and apply it consistently rather than mixing both.
+     *
      * @return true if this room is the spawn room, false otherwise
      */
     public boolean isSpawn() {

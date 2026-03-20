@@ -9,10 +9,10 @@ package com.p1_7.game.logic;
 public class RoomLabel {
 
     /** the answer number displayed on the room */
-    public final int value;
+    private final int value;
 
     /** true if this label represents the correct answer */
-    public final boolean isCorrect;
+    private final boolean isCorrect;
 
     /**
      * constructs a room label with the given answer value and correctness flag.

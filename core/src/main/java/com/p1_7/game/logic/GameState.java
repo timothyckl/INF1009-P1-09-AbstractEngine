@@ -15,11 +15,17 @@ public class GameState {
     /** the player's current score */
     private int score = 0;
 
+    /** starting health given to the player at the beginning of each session */
+    private static final int INITIAL_HEALTH = 3;
+
+    /** the level number at which a new play session begins */
+    private static final int INITIAL_LEVEL = 1;
+
     /** the player's remaining health points */
-    private int health = 3;
+    private int health = INITIAL_HEALTH;
 
     /** the current dungeon level */
-    private int level = 1;
+    private int level = INITIAL_LEVEL;
 
     /** true once the player's health reaches zero */
     private boolean gameOver = false;
@@ -69,6 +75,7 @@ public class GameState {
         }
         level++;
         if (level > MAX_LEVEL) {
+            level = MAX_LEVEL;
             gameWon = true;
         }
     }
@@ -80,8 +87,8 @@ public class GameState {
      */
     public void reset() {
         score    = 0;
-        health   = 3;
-        level    = 1;
+        health   = INITIAL_HEALTH;
+        level    = INITIAL_LEVEL;
         gameOver = false;
         gameWon  = false;
     }

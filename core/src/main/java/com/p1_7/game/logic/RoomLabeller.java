@@ -18,6 +18,9 @@ import java.util.Random;
  */
 public class RoomLabeller {
 
+    /** shared decoy generator; DecoyGenerator is stateless so one instance suffices */
+    private static final DecoyGenerator DECOY_GENERATOR = new DecoyGenerator();
+
     /**
      * labels a set of rooms for one dungeon floor given a question and rng.
      *
@@ -30,7 +33,8 @@ public class RoomLabeller {
      *
      * @param rooms           the full list of rooms; must not be null; must have at least 2 elements
      * @param question        the question whose answer is used for labelling; must not be null
-     * @param answerRoomCount the desired number of rooms to label (clamped to remaining.size())
+     * @param answerRoomCount the desired number of rooms to label (clamped to remaining.size()); when
+     *                        labelCount - 1 exceeds 3, decoy values cycle and may repeat across rooms
      * @param rng             random number generator; must not be null
      * @return a list starting with the spawn room followed by labelled and unlabelled rooms
      * @throws IllegalArgumentException if rooms or question or rng is null, or if rooms has fewer than 2 elements
@@ -47,6 +51,9 @@ public class RoomLabeller {
         }
         if (rooms.size() < 2) {
             throw new IllegalArgumentException("rooms must contain at least 2 elements");
+        }
+        if (rooms.contains(null)) {
+            throw new IllegalArgumentException("rooms must not contain null elements");
         }
 
         // rooms.get(0) is always the spawn — it gets no label
@@ -93,11 +100,14 @@ public class RoomLabeller {
      * @return a mutable list of labelled rooms of size labelCount
      */
     private List<LabelledRoom> buildLabelledRooms(List<Room> nonSpawnRooms, Question question, int labelCount, Random rng) {
-        DecoyGenerator decoyGenerator = new DecoyGenerator();
+        if (labelCount == 0) {
+            return new ArrayList<>();
+        }
+
         int correctAnswer = question.getCorrectAnswer();
 
         // generate the required number of decoys (labelCount - 1)
-        List<Integer> decoys = decoyGenerator.generate(
+        List<Integer> decoys = DECOY_GENERATOR.generate(
             correctAnswer,
             question.getOperator(),
             question.getOperands(),
