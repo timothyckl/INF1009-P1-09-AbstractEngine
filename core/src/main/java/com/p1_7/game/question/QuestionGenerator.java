@@ -83,7 +83,8 @@ public class QuestionGenerator {
      * @return a Question with operator DIVIDE and a whole-number answer
      */
     private Question generateDivide(Random rng) {
-        int b          = 1 + rng.nextInt(12);
+        // start divisor at 2 to avoid trivial "n ÷ 1 = n" questions
+        int b          = 2 + rng.nextInt(11);
         int multiplier = 2 + rng.nextInt(11);
         int a          = b * multiplier;
         int answer     = a / b;

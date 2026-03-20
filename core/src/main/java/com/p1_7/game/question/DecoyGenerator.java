@@ -132,9 +132,11 @@ public class DecoyGenerator {
     }
 
     /**
-     * extends the candidate list by walking further outward until it contains at least needed entries.
+     * extends the candidate list by walking further outward until enough valid decoys exist.
      *
-     * the starting offset is derived from the current list size to avoid revisiting values.
+     * the starting offset is derived from the list size assuming two candidates per offset
+     * (correct+offset and correct-offset), so no already-visited offsets are revisited.
+     * valid count is tracked incrementally to avoid rescanning the list on every iteration.
      *
      * @param existing the candidate list to extend in place
      * @param correct  the correct answer (excluded from extension candidates)
@@ -142,11 +144,20 @@ public class DecoyGenerator {
      * @return the extended candidate list (same reference as existing)
      */
     private List<Integer> extendCandidates(List<Integer> existing, int correct, int needed) {
-        // start beyond the initial offset range already covered
-        int offset = existing.size() + 1;
-        while (collectDecoys(existing, correct, needed).size() < needed) {
-            existing.add(correct + offset);
-            existing.add(correct - offset);
+        // each offset produces two candidates, so the next unvisited offset is size/2 + 1
+        int offset     = (existing.size() / 2) + 1;
+        int validCount = collectDecoys(existing, correct, needed).size();
+        while (validCount < needed) {
+            int pos = correct + offset;
+            int neg = correct - offset;
+            if (pos > 0 && pos != correct) {
+                validCount++;
+            }
+            existing.add(pos);
+            if (neg > 0 && neg != correct) {
+                validCount++;
+            }
+            existing.add(neg);
             offset++;
         }
         return existing;
