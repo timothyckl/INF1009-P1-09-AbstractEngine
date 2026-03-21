@@ -373,9 +373,12 @@ public class GameScene extends Scene {
             if (phase == RoundPhase.QUESTION_INTRO) {
                 questionPanel.update(deltaTime);
             }
-            if (!isTerminalPhase(phase)) {
-                phaseHoldTimer -= deltaTime;
-                if (phaseHoldTimer <= 0f) {
+            phaseHoldTimer -= deltaTime;
+            if (phaseHoldTimer <= 0f) {
+                if (isTerminalPhase(phase)) {
+                    // level_complete or game_over — exit to the appropriate scene
+                    context.changeScene(phase == RoundPhase.LEVEL_COMPLETE ? "level-complete" : "game-over");
+                } else {
                     orchestrator.advance();
                     // re-read and process the resulting phase in the same frame so
                     // reactions like player.resetToSpawn() are not delayed by one tick
@@ -421,8 +424,6 @@ public class GameScene extends Scene {
      * called whenever the round phase changes. resets the player to spawn on ROUND_RESET
      * and starts the hold timer for non-interactive phases.
      *
-     * 'from' is unused here but retained for future HUD transitions in issue #100.
-     *
      * @param from the previous phase (null on first frame)
      * @param to   the new phase
      */
@@ -438,9 +439,11 @@ public class GameScene extends Scene {
             refreshRoomAnswerCache();
             questionPanel.beginIntro(orchestrator.getCurrentQuestion().getPrompt());
         }
-        if (!isTerminalPhase(to) && to != RoundPhase.CHOOSING) {
-            // FEEDBACK uses a longer hold so the player can read the result
-            phaseHoldTimer = (to == RoundPhase.FEEDBACK) ? FEEDBACK_HOLD_SECONDS : PHASE_HOLD_SECONDS;
+        if (to != RoundPhase.CHOOSING) {
+            // terminal phases share the feedback hold so the overlay is visible before transitioning
+            phaseHoldTimer = (to == RoundPhase.FEEDBACK || isTerminalPhase(to))
+                ? FEEDBACK_HOLD_SECONDS
+                : PHASE_HOLD_SECONDS;
         }
     }
 
