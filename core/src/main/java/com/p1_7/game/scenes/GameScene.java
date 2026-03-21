@@ -253,7 +253,12 @@ public class GameScene extends Scene {
 
             @Override
             public void render(IDrawContext ctx) {
-                if (orch.getPhase() != RoundPhase.FEEDBACK) return;
+                // show for FEEDBACK, LEVEL_COMPLETE and GAME_OVER — terminal phases
+                // inherit the same overlay so the result is visible before the scene transition
+                RoundPhase p = orch.getPhase();
+                if (p != RoundPhase.FEEDBACK
+                        && p != RoundPhase.LEVEL_COMPLETE
+                        && p != RoundPhase.GAME_OVER) return;
                 boolean correct = orch.isLastAnswerCorrect();
                 // reuse pre-allocated colour and layout objects — no allocation in this hot path
                 overlayColour.set(correct ? OVERLAY_CORRECT : OVERLAY_WRONG);

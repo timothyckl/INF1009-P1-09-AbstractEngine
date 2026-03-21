@@ -120,7 +120,7 @@ public class LevelCompleteScene extends Scene {
             } else {
                 currentLevel++;
             }
-            context.changeScene("level-complete");
+            context.changeScene("game");
         }
     }
 

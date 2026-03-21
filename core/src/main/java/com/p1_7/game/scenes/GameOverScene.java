@@ -52,6 +52,11 @@ public class GameOverScene extends Scene {
         this.name = "game-over";
     }
 
+    /**
+     * initialises fonts, input, and all UI elements for the game-over screen.
+     *
+     * @param context the scene context used to resolve shared services
+     */
     @Override
     public void onEnter(SceneContext context) {
         IFontManager fontManager = context.get(IFontManager.class);
@@ -80,18 +85,37 @@ public class GameOverScene extends Scene {
         inputCooldown = INPUT_COOLDOWN_SECONDS;
     }
 
+    /**
+     * disposes resources and releases all field references to aid garbage collection.
+     *
+     * @param context the scene context (not used during disposal)
+     */
     @Override
     public void onExit(SceneContext context) {
         if (retryButton != null) retryButton.dispose();
         if (mainMenuButton != null) mainMenuButton.dispose();
         if (brightnessOverlay != null) brightnessOverlay.dispose();
-        titleFont = null;
-        promptFont = null;
-        buttonFont = null;
-        inputQuery = null;
+        background   = null;
+        title        = null;
+        promptStatus = null;
+        hintSpace    = null;
+        hintEsc      = null;
+        retryButton    = null;
+        mainMenuButton = null;
+        brightnessOverlay = null;
+        titleFont    = null;
+        promptFont   = null;
+        buttonFont   = null;
+        inputQuery   = null;
         cursorSource = null;
     }
 
+    /**
+     * handles input cooldown and button/keyboard interactions each frame.
+     *
+     * @param deltaTime elapsed time in seconds since the last frame
+     * @param context   the scene context used to trigger scene changes
+     */
     @Override
     public void update(float deltaTime, SceneContext context) {
         if (inputCooldown > 0f) {
@@ -120,6 +144,11 @@ public class GameOverScene extends Scene {
         }
     }
 
+    /**
+     * queues all UI elements to the render queue in painter's order.
+     *
+     * @param renderQueue the render queue accumulator for this frame
+     */
     @Override
     public void submitRenderable(IRenderQueue renderQueue) {
         renderQueue.queue(background);
