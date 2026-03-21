@@ -229,6 +229,7 @@ public class GameScene extends Scene {
         questionPanel.beginIntro(orchestrator.getCurrentQuestion().getPrompt());
         // prevent onPhaseChanged from firing beginIntro a second time on the first update tick
         this.lastKnownPhase = orchestrator.getPhase();
+        this.phaseHoldTimer = PHASE_HOLD_SECONDS; // initialise hold for the initial QUESTION_INTRO
 
         // capture hudFont as a final local so closures below are independent of the field lifecycle
         final BitmapFont capturedHudFont = hudFont;
