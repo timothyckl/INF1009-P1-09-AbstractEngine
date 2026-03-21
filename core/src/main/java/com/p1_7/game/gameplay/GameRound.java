@@ -151,9 +151,10 @@ public class GameRound {
      *   round_reset     -> question_intro  (generates a new question)
      *
      * level_complete and game_over are terminal: calling advance() from either throws.
+     * calling advance() from choosing is also invalid; use submitAnswer() instead.
      *
-     * @throws IllegalStateException if called from level_complete, game_over, or any
-     *                               other phase that has no valid advance transition
+     * @throws IllegalStateException if called from level_complete, game_over, choosing,
+     *                               or any other phase that has no valid advance transition
      */
     public void advance() {
         switch (phase) {
@@ -172,7 +173,8 @@ public class GameRound {
                 break;
 
             case ROUND_RESET:
-                // load the next question before returning to the intro phase
+                // generate the new question before updating phase so a generator failure
+                // does not leave the round with a stale question in an inconsistent state
                 currentQuestion = questionGenerator.generateQuestion();
                 phase = RoundPhase.QUESTION_INTRO;
                 break;
@@ -184,6 +186,10 @@ public class GameRound {
             case GAME_OVER:
                 throw new IllegalStateException(
                     "advance called on terminal phase GAME_OVER");
+
+            case CHOOSING:
+                throw new IllegalStateException(
+                    "advance is not valid from CHOOSING; call submitAnswer() instead");
 
             default:
                 throw new IllegalStateException(
