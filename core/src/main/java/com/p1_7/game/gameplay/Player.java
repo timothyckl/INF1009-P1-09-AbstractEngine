@@ -158,10 +158,8 @@ public class Player extends Entity implements IRenderable, IMovable {
      */
     public void update(float deltaTime, IInputQuery inputQuery, RoundPhase phase,
                        MazeLayout layout) {
-        // lock movement during non-interactive phases
-        if (phase == RoundPhase.QUESTION_INTRO
-                || phase == RoundPhase.FEEDBACK
-                || phase == RoundPhase.ROUND_RESET) {
+        // only allow movement during the choosing phase; any other phase locks the player
+        if (phase != RoundPhase.CHOOSING) {
             setVelocity(new float[]{ 0f, 0f });
             return;
         }
@@ -175,20 +173,20 @@ public class Player extends Entity implements IRenderable, IMovable {
         float x = transform.getPosition(0);
         float y = transform.getPosition(1);
 
-        // axis-separated AABB wall check — zero out whichever axis would cause penetration
+        // two-pass axis-separated AABB wall check — each axis is resolved independently so
+        // one wall zeroing x cannot influence the y test for a different wall in the same frame
         for (float[] wall : layout.getWallBounds()) {
-            float wx = wall[0];
-            float wy = wall[1];
-            float ww = wall[2];
-            float wh = wall[3];
-
-            // test x-axis movement independently
-            if (overlaps(x + rawVx * deltaTime, y, SIZE, SIZE, wx, wy, ww, wh)) {
+            if (overlaps(x + rawVx * deltaTime, y, SIZE, SIZE,
+                         wall[0], wall[1], wall[2], wall[3])) {
                 rawVx = 0f;
+                break;
             }
-            // test y-axis movement independently
-            if (overlaps(x, y + rawVy * deltaTime, SIZE, SIZE, wx, wy, ww, wh)) {
+        }
+        for (float[] wall : layout.getWallBounds()) {
+            if (overlaps(x, y + rawVy * deltaTime, SIZE, SIZE,
+                         wall[0], wall[1], wall[2], wall[3])) {
                 rawVy = 0f;
+                break;
             }
         }
 

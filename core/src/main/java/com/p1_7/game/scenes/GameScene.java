@@ -41,8 +41,8 @@ public class GameScene extends Scene {
      */
     @Override
     public void onEnter(SceneContext context) {
-        float[] spawn = MazeLayout.createDefault().getSpawnPoint();
         this.layout     = MazeLayout.createDefault();
+        float[] spawn   = layout.getSpawnPoint();
         this.player     = new Player(spawn[0], spawn[1]);
         this.inputQuery = context.get(IInputQuery.class);
     }
