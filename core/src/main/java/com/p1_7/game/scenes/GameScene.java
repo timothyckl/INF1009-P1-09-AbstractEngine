@@ -202,6 +202,9 @@ public class GameScene extends Scene {
             roomAnswerLayouts[i] = new GlyphLayout();
         }
 
+        // create the brightness overlay early so submitRenderable never sees a null reference
+        this.brightnessOverlay = new BrightnessOverlay();
+
         // build one renderable per answer room — grey outline + centred answer label
         this.roomRenderables = new ArrayList<>(4);
         List<float[]> allRooms = layout.getAllRoomBounds();
@@ -292,8 +295,6 @@ public class GameScene extends Scene {
                 ((GdxDrawContext) ctx).drawFont(capturedHudFont, text, 1100f, 700f);
             }
         };
-
-        this.brightnessOverlay = new BrightnessOverlay();
 
         // health display: top-left, 3 squares (filled red = remaining health, dark grey = lost)
         this.healthDisplay = new IRenderable() {
@@ -418,9 +419,11 @@ public class GameScene extends Scene {
 
     /**
      * submits all renderables to the queue in painter's order:
-     * room outlines and answer labels → player → question panel → score → health → feedback overlay.
+     * room outlines and answer labels → player → question panel → score → health →
+     * feedback overlay → brightness overlay.
      *
-     * the feedback overlay is queued last so it composites over all other elements.
+     * the brightness overlay is queued last so it dims the entire composited frame
+     * uniformly per the user's brightness setting.
      *
      * @param renderQueue the render queue accumulator for this frame
      */
