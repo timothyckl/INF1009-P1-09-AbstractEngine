@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * immutable domain object representing a single arithmetic question in the math maze game.
@@ -32,12 +33,18 @@ public final class MathQuestion {
      *
      * @param prompt        the question text shown to the player; must not be null
      * @param correctAnswer the single correct integer answer
-     * @param options       exactly four unique integers that include {@code correctAnswer}
-     * @throws IllegalArgumentException if {@code options} does not contain exactly 4 elements,
-     *                                  if any options are duplicates, or if {@code correctAnswer}
-     *                                  is not present in {@code options}
+     * @param options       exactly four unique non-null integers that include {@code correctAnswer}
+     * @throws IllegalArgumentException if {@code prompt} is null, if {@code options} does not
+     *                                  contain exactly 4 elements, if any elements are null or
+     *                                  duplicated, or if {@code correctAnswer} is not present
+     *                                  in {@code options}
      */
     public MathQuestion(String prompt, int correctAnswer, List<Integer> options) {
+        // reject a null prompt early so callers get a clear error at construction time
+        if (prompt == null) {
+            throw new IllegalArgumentException("prompt must not be null");
+        }
+
         // validate option count before anything else
         if (options == null || options.size() != 4) {
             throw new IllegalArgumentException(
@@ -45,8 +52,16 @@ public final class MathQuestion {
                     + (options == null ? "null" : options.size()));
         }
 
+        // reject null elements to prevent misleading errors in later checks
+        for (int i = 0; i < options.size(); i++) {
+            if (options.get(i) == null) {
+                throw new IllegalArgumentException(
+                    "options must not contain null elements, found null at index " + i);
+            }
+        }
+
         // check for duplicate values using a set
-        HashSet<Integer> uniqueOptions = new HashSet<>(options);
+        Set<Integer> uniqueOptions = new HashSet<>(options);
         if (uniqueOptions.size() != options.size()) {
             throw new IllegalArgumentException(
                 "options must all be unique, but duplicates were found: " + options);
@@ -96,8 +111,9 @@ public final class MathQuestion {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         MathQuestion other = (MathQuestion) obj;
-        return correctAnswer == other.correctAnswer
-            && Objects.equals(prompt, other.prompt)
+        // field order matches hashCode: prompt, correctAnswer, options
+        return Objects.equals(prompt, other.prompt)
+            && correctAnswer == other.correctAnswer
             && Objects.equals(options, other.options);
     }
 
