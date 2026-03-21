@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.p1_7.abstractengine.collision.IBounds;
 import com.p1_7.abstractengine.input.IInputQuery;
 import com.p1_7.abstractengine.render.IDrawContext;
@@ -14,6 +16,7 @@ import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
 import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.game.core.Transform2D;
+import com.p1_7.game.entities.QuestionPanel;
 import com.p1_7.game.gameplay.Difficulty;
 import com.p1_7.game.gameplay.ILevelOrchestrator;
 import com.p1_7.game.gameplay.MazeCollisionManager;
@@ -22,6 +25,7 @@ import com.p1_7.game.gameplay.Player;
 import com.p1_7.game.gameplay.RoundPhase;
 import com.p1_7.game.gameplay.WallCollidable;
 import com.p1_7.game.managers.GameMovementManager;
+import com.p1_7.game.managers.IFontManager;
 import com.p1_7.game.platform.GdxDrawContext;
 
 /**
@@ -42,8 +46,11 @@ public class GameScene extends Scene {
     /** re-entry cooldown in seconds before a wrong room can penalise the player again */
     private static final float ROOM_COOLDOWN_SECONDS = 1.0f;
 
-    /** placeholder hold time in seconds for non-interactive phases (replaced by HUD in #100) */
+    /** hold time in seconds for non-interactive phases (QUESTION_INTRO and ROUND_RESET) */
     private static final float PHASE_HOLD_SECONDS = 1.0f;
+
+    /** hold time in seconds for the FEEDBACK phase — longer to allow the player to read the result */
+    private static final float FEEDBACK_HOLD_SECONDS = 2.0f;
 
     /** the fixed spatial layout providing spawn point, room bounds, and wall bounds */
     private MazeLayout layout;
@@ -84,8 +91,26 @@ public class GameScene extends Scene {
     /** countdown timer used to auto-advance through non-interactive phases */
     private float phaseHoldTimer;
 
-    /** one IRenderable per answer room — renders a grey outline each frame */
+    /** one IRenderable per answer room — renders a grey outline and answer label each frame */
     private List<IRenderable> roomRenderables;
+
+    /** animated panel that slides to the bottom of the screen during QUESTION_INTRO */
+    private QuestionPanel questionPanel;
+
+    /** font shared between the question panel and room answer labels */
+    private BitmapFont promptFont;
+
+    /** font used for score text and feedback messages */
+    private BitmapFont hudFont;
+
+    /** full-screen tinted overlay with result text; visible only during FEEDBACK */
+    private IRenderable feedbackOverlay;
+
+    /** score counter rendered in the top-right corner */
+    private IRenderable scoreDisplay;
+
+    /** three health squares rendered in the top-left corner */
+    private IRenderable healthDisplay;
 
     /**
      * constructs the game scene with the scene key "game".
@@ -136,26 +161,107 @@ public class GameScene extends Scene {
             cachedRoomBounds[i] = layout.getRoomBounds(i);
         }
 
-        // build one grey-outline renderable per answer room
+        // source fonts from the font manager
+        IFontManager fontManager = context.get(IFontManager.class);
+        this.promptFont = fontManager.getPromptFont();
+        this.hudFont    = fontManager.getDarkTextFont(22);
+
+        // build one renderable per answer room — grey outline + centred answer label
         this.roomRenderables = new ArrayList<>(4);
         List<float[]> allRooms = layout.getAllRoomBounds();
-        for (float[] rect : allRooms) {
+
+        // capture orchestrator as effectively-final for use inside the lambdas
+        final ILevelOrchestrator orch = orchestrator;
+        final BitmapFont roomFont     = promptFont;
+
+        for (int i = 0; i < allRooms.size(); i++) {
+            final int    roomIndex = i;
+            final float[] rect     = allRooms.get(i);
             // transform satisfies ITransformable but is not used for rendering;
             // the rect array drives the draw call directly
-            Transform2D roomTransform = new Transform2D(rect[0], rect[1], rect[2], rect[3]);
+            final Transform2D roomTransform = new Transform2D(rect[0], rect[1], rect[2], rect[3]);
             roomRenderables.add(new IRenderable() {
-                @Override
-                public String getAssetPath() { return null; }
-
-                @Override
-                public ITransform getTransform() { return roomTransform; }
+                @Override public String    getAssetPath() { return null; }
+                @Override public ITransform getTransform() { return roomTransform; }
 
                 @Override
                 public void render(IDrawContext ctx) {
-                    ((GdxDrawContext) ctx).rect(Color.GRAY, rect[0], rect[1], rect[2], rect[3], false);
+                    GdxDrawContext gdx = (GdxDrawContext) ctx;
+                    // grey outline marking the room boundary
+                    gdx.rect(Color.GRAY, rect[0], rect[1], rect[2], rect[3], false);
+                    // answer value centred within the room
+                    String text    = String.valueOf(orch.getRoomAssignment().getAnswerForRoom(roomIndex));
+                    GlyphLayout gl = new GlyphLayout(roomFont, text);
+                    gdx.drawFont(roomFont, text,
+                        rect[0] + (rect[2] - gl.width)  / 2f,
+                        rect[1] + rect[3] / 2f + gl.height / 2f);
                 }
             });
         }
+
+        // question panel — begins its slide animation immediately (scene starts at QUESTION_INTRO)
+        this.questionPanel = new QuestionPanel(promptFont);
+        questionPanel.beginIntro(orchestrator.getCurrentQuestion().getPrompt());
+
+        // feedback overlay: full-screen green/red tint + result text, shown only during FEEDBACK
+        final Color overlayColour = new Color();
+        this.feedbackOverlay = new IRenderable() {
+            private final Transform2D t = new Transform2D(0f, 0f, 1280f, 720f);
+            @Override public String    getAssetPath() { return null; }
+            @Override public ITransform getTransform() { return t; }
+
+            @Override
+            public void render(IDrawContext ctx) {
+                if (orch.getPhase() != RoundPhase.FEEDBACK) return;
+                boolean correct = orch.isLastAnswerCorrect();
+                overlayColour.set(correct
+                    ? new Color(0f, 0.7f, 0f, 0.35f)
+                    : new Color(0.8f, 0f, 0f, 0.35f));
+                GdxDrawContext gdx = (GdxDrawContext) ctx;
+                gdx.drawTintedQuad(overlayColour, 0f, 0f, 1280f, 720f);
+                String msg       = correct ? "CORRECT!" : "WRONG!";
+                GlyphLayout layout = new GlyphLayout(hudFont, msg);
+                gdx.drawFont(hudFont, msg, 640f - layout.width / 2f, 400f);
+            }
+        };
+
+        // score display: top-right corner
+        this.scoreDisplay = new IRenderable() {
+            private final Transform2D t = new Transform2D(1100f, 680f, 0f, 0f);
+            @Override public String    getAssetPath() { return null; }
+            @Override public ITransform getTransform() { return t; }
+
+            @Override
+            public void render(IDrawContext ctx) {
+                String text = "Score: " + orch.getScore();
+                ((GdxDrawContext) ctx).drawFont(hudFont, text, 1100f, 700f);
+            }
+        };
+
+        // health display: top-left, 3 squares (filled red = remaining health, dark grey = lost)
+        this.healthDisplay = new IRenderable() {
+            private static final float SQ     = 20f;
+            private static final float GAP    = 6f;
+            private static final float BASE_X = 30f;
+            private static final float BASE_Y = 682f;
+            private final Transform2D t = new Transform2D(BASE_X, BASE_Y, 0f, 0f);
+            @Override public String    getAssetPath() { return null; }
+            @Override public ITransform getTransform() { return t; }
+
+            @Override
+            public void render(IDrawContext ctx) {
+                GdxDrawContext gdx = (GdxDrawContext) ctx;
+                int health = orch.getHealth();
+                for (int i = 0; i < 3; i++) {
+                    float x = BASE_X + i * (SQ + GAP);
+                    if (i < health) {
+                        gdx.rect(Color.RED, x, BASE_Y, SQ, SQ, true);
+                    } else {
+                        gdx.rect(new Color(0.3f, 0.3f, 0.3f, 1f), x, BASE_Y, SQ, SQ, false);
+                    }
+                }
+            }
+        };
     }
 
     /**
@@ -180,6 +286,12 @@ public class GameScene extends Scene {
         cachedRoomBounds   = null;
         roomRenderables    = null;
         lastKnownPhase     = null;
+        questionPanel      = null;
+        promptFont         = null;
+        hudFont            = null;
+        feedbackOverlay    = null;
+        scoreDisplay       = null;
+        healthDisplay      = null;
 
         layout           = null;
         player           = null;
@@ -214,6 +326,10 @@ public class GameScene extends Scene {
         if (phase != RoundPhase.CHOOSING) {
             // zeros velocity via phase lock inside player.update()
             player.update(deltaTime, inputQuery, phase);
+            // advance the panel slide during the QUESTION_INTRO hold
+            if (phase == RoundPhase.QUESTION_INTRO) {
+                questionPanel.update(deltaTime);
+            }
             if (!isTerminalPhase(phase)) {
                 phaseHoldTimer -= deltaTime;
                 if (phaseHoldTimer <= 0f) {
@@ -236,7 +352,10 @@ public class GameScene extends Scene {
     }
 
     /**
-     * submits the grey room outlines first, then the player, to the render queue.
+     * submits all renderables to the queue in painter's order:
+     * room outlines and answer labels → player → question panel → score → health → feedback overlay.
+     *
+     * the feedback overlay is queued last so it composites over all other elements.
      *
      * @param renderQueue the render queue accumulator for this frame
      */
@@ -246,6 +365,10 @@ public class GameScene extends Scene {
             renderQueue.queue(room);
         }
         renderQueue.queue(player);
+        renderQueue.queue(questionPanel);   // slides above the world during QUESTION_INTRO
+        renderQueue.queue(scoreDisplay);
+        renderQueue.queue(healthDisplay);
+        renderQueue.queue(feedbackOverlay); // topmost — composites over all others
     }
 
     // ── private helpers ───────────────────────────────────────────────────────
@@ -266,8 +389,13 @@ public class GameScene extends Scene {
             Arrays.fill(playerInsideRoom, false);
             Arrays.fill(roomCooldownTimers, 0f);
         }
+        if (to == RoundPhase.QUESTION_INTRO) {
+            // start the panel slide for the incoming question
+            questionPanel.beginIntro(orchestrator.getCurrentQuestion().getPrompt());
+        }
         if (!isTerminalPhase(to) && to != RoundPhase.CHOOSING) {
-            phaseHoldTimer = PHASE_HOLD_SECONDS;
+            // FEEDBACK uses a longer hold so the player can read the result
+            phaseHoldTimer = (to == RoundPhase.FEEDBACK) ? FEEDBACK_HOLD_SECONDS : PHASE_HOLD_SECONDS;
         }
     }
 
