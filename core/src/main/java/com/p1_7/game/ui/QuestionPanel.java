@@ -136,6 +136,9 @@ public class QuestionPanel extends Entity implements IRenderable {
     /**
      * draws the dark panel background and centres the question text within it.
      *
+     * during the pre-slide delay the panel is intentionally visible at START_Y so the
+     * player has time to read the question before it slides to the bottom of the screen.
+     *
      * @param ctx the draw context for this frame
      */
     @Override

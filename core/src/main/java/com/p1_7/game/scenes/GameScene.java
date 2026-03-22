@@ -51,7 +51,11 @@ public class GameScene extends Scene {
     /** re-entry cooldown in seconds before a wrong room can penalise the player again */
     private static final float ROOM_COOLDOWN_SECONDS = 1.0f;
 
-    /** hold time for QUESTION_INTRO — covers 1.5 s pre-slide delay + 1.0 s slide + 2.0 s reading hold */
+    /**
+     * hold time for QUESTION_INTRO — must equal QuestionPanel.ANIM_START_DELAY (1.5 s)
+     * + QuestionPanel.ANIM_DURATION (1.0 s) + desired reading hold (2.0 s) = 4.5 s.
+     * update this constant whenever either animation constant in QuestionPanel changes.
+     */
     private static final float QUESTION_INTRO_HOLD_SECONDS = 4.5f;
 
     /** hold time in seconds for ROUND_RESET */
@@ -223,7 +227,7 @@ public class GameScene extends Scene {
         IFontManager fontManager = context.get(IFontManager.class);
         this.promptFont   = fontManager.getLightTextFont(28);
         this.questionFont = fontManager.getLightTextFont(36);
-        this.hudFont    = fontManager.getLightTextFont(22);
+        this.hudFont      = fontManager.getLightTextFont(22);
 
         // allocate per-room answer caches before the loop so closures can capture the array references
         this.roomAnswerTexts   = new String[4];
@@ -594,11 +598,13 @@ public class GameScene extends Scene {
         }
         if (to != RoundPhase.CHOOSING) {
             // terminal phases share the feedback hold so the overlay is visible before transitioning
-            phaseHoldTimer = (to == RoundPhase.FEEDBACK || isTerminalPhase(to))
-                ? FEEDBACK_HOLD_SECONDS
-                : (to == RoundPhase.QUESTION_INTRO
-                    ? QUESTION_INTRO_HOLD_SECONDS
-                    : ROUND_RESET_HOLD_SECONDS);
+            if (to == RoundPhase.FEEDBACK || isTerminalPhase(to)) {
+                phaseHoldTimer = FEEDBACK_HOLD_SECONDS;
+            } else if (to == RoundPhase.QUESTION_INTRO) {
+                phaseHoldTimer = QUESTION_INTRO_HOLD_SECONDS;
+            } else {
+                phaseHoldTimer = ROUND_RESET_HOLD_SECONDS;
+            }
         }
     }
 
