@@ -299,12 +299,6 @@ public class SceneManager extends UpdatableManager {
                 if (currentKey != null && scenes.containsKey(currentKey)) {
                     scenes.get(currentKey).onExit(context);
                 }
-                // if a scene was suspended and we are navigating away rather than resuming,
-                // exit it now so it can release its resources cleanly
-                if (suspendedSceneKey != null && scenes.containsKey(suspendedSceneKey)) {
-                    scenes.get(suspendedSceneKey).onExit(context);
-                    clearSuspendedScene();
-                }
                 currentKey = pendingKey;
                 pendingKey = null;
                 if (scenes.containsKey(currentKey)) {

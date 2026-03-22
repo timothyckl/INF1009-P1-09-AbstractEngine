@@ -176,14 +176,23 @@ public class PauseScene extends Scene {
     }
 
     /**
-     * navigates to the main menu, discarding the suspended game session.
+     * exits the suspended game scene explicitly, clears the suspension record,
+     * then navigates to the main menu.
      *
-     * SceneManager's non-resume changeScene path now calls onExit() on the suspended
-     * scene automatically, so no manual cleanup is needed here.
+     * SceneManager's non-resume changeScene only exits the current (overlay) scene;
+     * it cannot tell whether a suspended scene should be discarded or preserved, so
+     * the caller is responsible for cleanup when leaving the overlay chain entirely.
      *
      * @param context the engine service context
      */
     private void returnToMenu(SceneContext context) {
+        if (suspendedKey != null) {
+            Scene suspended = context.getScene(suspendedKey);
+            if (suspended != null) {
+                suspended.onExit(context);
+            }
+            context.clearSuspendedScene();
+        }
         context.changeScene("menu");
     }
 
