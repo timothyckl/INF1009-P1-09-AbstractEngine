@@ -17,8 +17,10 @@ import com.p1_7.abstractengine.render.IRenderQueue;
 import com.p1_7.abstractengine.scene.Scene;
 import com.p1_7.abstractengine.scene.SceneContext;
 import com.p1_7.abstractengine.transform.ITransform;
+import com.p1_7.game.Settings;
 import com.p1_7.game.core.Transform2D;
 import com.p1_7.game.ui.BrightnessOverlay;
+import com.p1_7.game.ui.HudStrip;
 import com.p1_7.game.ui.QuestionPanel;
 import com.p1_7.game.entities.Player;
 import com.p1_7.game.gameplay.Difficulty;
@@ -140,6 +142,15 @@ public class GameScene extends Scene {
     /** three health squares rendered in the top-left corner */
     private IRenderable healthDisplay;
 
+    /** solid top bar separating HUD elements from the playfield */
+    private HudStrip hudStrip;
+
+    /** vertical offset from the strip baseline to the score text baseline, in pixels */
+    private static final float HUD_SCORE_BASELINE_OFFSET = 31f;
+
+    /** vertical offset from the strip baseline to the health pip top edge, in pixels */
+    private static final float HUD_HEALTH_BASELINE_OFFSET = 14f;
+
     /** set to true to draw zone-boundary and corridor-centreline debug lines over the scene */
     private static final boolean SHOW_DEBUG_GRID = false;
 
@@ -216,6 +227,7 @@ public class GameScene extends Scene {
 
         // create the brightness overlay early so submitRenderable never sees a null reference
         this.brightnessOverlay = new BrightnessOverlay();
+        this.hudStrip = new HudStrip();
 
         // build one renderable per answer room — grey outline + centred answer label
         this.roomRenderables = new ArrayList<>(4);
@@ -266,10 +278,15 @@ public class GameScene extends Scene {
         final GlyphLayout correctLayout = new GlyphLayout(capturedHudFont, "CORRECT!");
         final GlyphLayout wrongLayout   = new GlyphLayout(capturedHudFont, "WRONG!");
 
-        // feedback overlay: full-screen green/red tint + result text, shown only during FEEDBACK
+        // feedback overlay: playfield-height green/red tint + result text, shown only during FEEDBACK
         final Color overlayColour = new Color();
         this.feedbackOverlay = new IRenderable() {
-            private final Transform2D t = new Transform2D(0f, 0f, 1280f, 720f);
+            private final Transform2D t = new Transform2D(
+                0f,
+                0f,
+                Settings.getWindowWidth(),
+                HudStrip.PLAYFIELD_HEIGHT
+            );
             @Override public String     getAssetPath() { return null; }
             @Override public ITransform getTransform() { return t; }
 
@@ -285,23 +302,48 @@ public class GameScene extends Scene {
                 // reuse pre-allocated colour and layout objects — no allocation in this hot path
                 overlayColour.set(correct ? OVERLAY_CORRECT : OVERLAY_WRONG);
                 GdxDrawContext gdx    = (GdxDrawContext) ctx;
-                gdx.drawTintedQuad(overlayColour, 0f, 0f, 1280f, 720f);
+                gdx.drawTintedQuad(
+                    overlayColour,
+                    0f,
+                    0f,
+                    Settings.getWindowWidth(),
+                    HudStrip.PLAYFIELD_HEIGHT
+                );
                 String      msg    = correct ? "CORRECT!" : "WRONG!";
                 GlyphLayout layout = correct ? correctLayout : wrongLayout;
-                gdx.drawFont(capturedHudFont, msg, 640f - layout.width / 2f, 400f);
+                gdx.drawFont(
+                    capturedHudFont,
+                    msg,
+                    Settings.getWindowWidth() / 2f - layout.width / 2f,
+                    HudStrip.PLAYFIELD_HEIGHT / 2f + 60f
+                );
             }
         };
 
         // score display: top-right corner
         this.scoreDisplay = new IRenderable() {
-            private final Transform2D t = new Transform2D(1100f, 680f, 0f, 0f);
+            private static final float RIGHT_PADDING = 18f;
+            private final float BASELINE_Y = HudStrip.STRIP_Y + HUD_SCORE_BASELINE_OFFSET;
+            private final Transform2D t = new Transform2D(
+                Settings.getWindowWidth() - RIGHT_PADDING,
+                BASELINE_Y,
+                0f,
+                0f
+            );
+            private final GlyphLayout layout = new GlyphLayout();
             @Override public String     getAssetPath() { return null; }
             @Override public ITransform getTransform() { return t; }
 
             @Override
             public void render(IDrawContext ctx) {
                 String text = "Score: " + orch.getScore();
-                ((GdxDrawContext) ctx).drawFont(capturedHudFont, text, 1100f, 700f);
+                layout.setText(capturedHudFont, text);
+                ((GdxDrawContext) ctx).drawFont(
+                    capturedHudFont,
+                    text,
+                    Settings.getWindowWidth() - RIGHT_PADDING - layout.width,
+                    BASELINE_Y
+                );
             }
         };
 
@@ -309,8 +351,8 @@ public class GameScene extends Scene {
         this.healthDisplay = new IRenderable() {
             private static final float SQ     = 20f;
             private static final float GAP    = 6f;
-            private static final float BASE_X = 30f;
-            private static final float BASE_Y = 682f;
+            private static final float BASE_X = 18f;
+            private final float BASE_Y = HudStrip.STRIP_Y + HUD_HEALTH_BASELINE_OFFSET;
             private final Transform2D t = new Transform2D(BASE_X, BASE_Y, 0f, 0f);
             @Override public String     getAssetPath() { return null; }
             @Override public ITransform getTransform() { return t; }
@@ -348,13 +390,41 @@ public class GameScene extends Scene {
                 public void render(IDrawContext ctx) {
                     GdxDrawContext gdx = (GdxDrawContext) ctx;
                     // magenta zone boundary lines
-                    gdx.rect(DEBUG_ZONE_COLOUR, zoneLeft  - 1f, 0f,   2f,    720f, true);
-                    gdx.rect(DEBUG_ZONE_COLOUR, zoneRight - 1f, 0f,   2f,    720f, true);
-                    gdx.rect(DEBUG_ZONE_COLOUR, 0f, zoneTop - 1f,     1280f, 2f,   true);
-                    gdx.rect(DEBUG_ZONE_COLOUR, 0f, zoneBot - 1f,     1280f, 2f,   true);
-                    // cyan screen midlines (x=640, y=360)
-                    gdx.rect(DEBUG_CORR_COLOUR, 639f, 0f,  2f,    720f, true);
-                    gdx.rect(DEBUG_CORR_COLOUR, 0f,   359f, 1280f, 2f,  true);
+                    gdx.rect(
+                        DEBUG_ZONE_COLOUR,
+                        zoneLeft - 1f,
+                        0f,
+                        2f,
+                        HudStrip.PLAYFIELD_HEIGHT,
+                        true
+                    );
+                    gdx.rect(
+                        DEBUG_ZONE_COLOUR,
+                        zoneRight - 1f,
+                        0f,
+                        2f,
+                        HudStrip.PLAYFIELD_HEIGHT,
+                        true
+                    );
+                    gdx.rect(DEBUG_ZONE_COLOUR, 0f, zoneTop - 1f, Settings.getWindowWidth(), 2f, true);
+                    gdx.rect(DEBUG_ZONE_COLOUR, 0f, zoneBot - 1f, Settings.getWindowWidth(), 2f, true);
+                    // cyan playfield midlines
+                    gdx.rect(
+                        DEBUG_CORR_COLOUR,
+                        Settings.getWindowWidth() / 2f - 1f,
+                        0f,
+                        2f,
+                        HudStrip.PLAYFIELD_HEIGHT,
+                        true
+                    );
+                    gdx.rect(
+                        DEBUG_CORR_COLOUR,
+                        0f,
+                        HudStrip.PLAYFIELD_HEIGHT / 2f - 1f,
+                        Settings.getWindowWidth(),
+                        2f,
+                        true
+                    );
                     // orange spawn crosshair
                     gdx.rect(DEBUG_SPAWN_COLOUR, sp[0] - 4f, sp[1] - 4f, 8f, 8f, true);
                 }
@@ -395,6 +465,7 @@ public class GameScene extends Scene {
         feedbackOverlay    = null;
         scoreDisplay       = null;
         healthDisplay      = null;
+        hudStrip           = null;
         brightnessOverlay   = null;
         debugGridRenderable = null;
 
@@ -461,8 +532,8 @@ public class GameScene extends Scene {
 
     /**
      * submits all renderables to the queue in painter's order:
-     * room outlines and answer labels → player → question panel → score → health →
-     * feedback overlay → brightness overlay.
+     * room outlines and answer labels → player → question panel → hud strip → score → health →
+     * feedback overlay → debug grid (when enabled) → brightness overlay.
      *
      * the brightness overlay is queued last so it dims the entire composited frame
      * uniformly per the user's brightness setting.
@@ -481,6 +552,7 @@ public class GameScene extends Scene {
         }
         renderQueue.queue(player);
         renderQueue.queue(questionPanel);   // slides above the world during QUESTION_INTRO
+        renderQueue.queue(hudStrip);
         renderQueue.queue(scoreDisplay);
         renderQueue.queue(healthDisplay);
         renderQueue.queue(feedbackOverlay);
@@ -614,14 +686,25 @@ public class GameScene extends Scene {
      * @return a renderable that fills the whole gameplay viewport
      */
     private IRenderable createBackgroundRenderable() {
-        final Transform2D transform = new Transform2D(0f, 0f, 1280f, 720f);
+        final Transform2D transform = new Transform2D(
+            0f,
+            0f,
+            Settings.getWindowWidth(),
+            HudStrip.PLAYFIELD_HEIGHT
+        );
         return new IRenderable() {
             @Override public String getAssetPath() { return null; }
             @Override public ITransform getTransform() { return transform; }
 
             @Override
             public void render(IDrawContext ctx) {
-                ((GdxDrawContext) ctx).drawTintedQuad(SCENE_BG_COLOUR, 0f, 0f, 1280f, 720f);
+                ((GdxDrawContext) ctx).drawTintedQuad(
+                    SCENE_BG_COLOUR,
+                    0f,
+                    0f,
+                    Settings.getWindowWidth(),
+                    HudStrip.PLAYFIELD_HEIGHT
+                );
             }
         };
     }
