@@ -1,30 +1,19 @@
 package com.p1_7.game.ui;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.p1_7.abstractengine.entity.Entity;
-import com.p1_7.abstractengine.entity.IDisposable;
-import com.p1_7.abstractengine.input.IInputQuery;
-import com.p1_7.abstractengine.input.InputState;
 import com.p1_7.abstractengine.render.IDrawContext;
-import com.p1_7.abstractengine.render.IRenderable;
-import com.p1_7.abstractengine.transform.ITransform;
-import com.p1_7.game.core.Transform2D;
-import com.p1_7.game.input.GameActions;
-import com.p1_7.game.input.ICursorSource;
 import com.p1_7.game.platform.GdxDrawContext;
 
 /**
  * Reusable UI button for menus. Supports two modes:
  *
- *   TEXTURED  – draws a PNG for the button body; hover applies a colour tint.
+ *   TEXTURED   — draws a PNG for the button body; hover applies a colour tint.
  *               Create via MenuButton.withTexture(...).
  *
- *   PROCEDURAL – draws a plain coloured rectangle (no image files needed).
+ *   PROCEDURAL — draws a plain coloured rectangle (no image files needed).
  *               Create via new MenuButton(...).
  *
  * In both modes the label is drawn centred over the button with the
@@ -35,11 +24,7 @@ import com.p1_7.game.platform.GdxDrawContext;
  * Call dispose() inside the scene's onExit() when the button was created via
  * withTexture(); it is a safe no-op for procedurally constructed instances.
  */
-public class MenuButton extends Entity implements IRenderable, IDisposable {
-
-    // ── dimensions ──────────────────────────────────────────────
-    public static final float BUTTON_WIDTH  = 260f;
-    public static final float BUTTON_HEIGHT = 55f;
+public class MenuButton extends Button {
 
     // ── procedural fallback colours ──────────────────────────────
     private static final Color COLOUR_NORMAL = new Color(0.20f, 0.20f, 0.55f, 1f);
@@ -51,32 +36,23 @@ public class MenuButton extends Entity implements IRenderable, IDisposable {
     private static final Color TINT_NORMAL = Color.WHITE.cpy();
     private static final Color TINT_HOVER  = new Color(0.75f, 0.88f, 1.0f, 1f);
 
-    // ── state ────────────────────────────────────────────────────
-    private final Transform2D transform;
-    private final String      label;
-    private final BitmapFont  font;
-    private final GlyphLayout layout;
-
     /** null in procedural mode */
     private final Texture texNormal;
     /** null in procedural mode; may equal texNormal if no separate hover image */
     private final Texture texHover;
-
-    private boolean hovered = false;
-    private boolean clicked = false;
 
     // ── factory method (textured) ────────────────────────────────
 
     /**
      * Creates a textured button that loads its own PNG files.
      *
-     * @param label       text shown on the button
-     * @param centreX     horizontal centre in world coordinates
-     * @param centreY     vertical centre in world coordinates
-     * @param font        BitmapFont owned by the scene (not disposed by this button)
-     * @param normalPath  asset path for the normal state, e.g. "menu/button.png"
-     * @param hoverPath   asset path for the hover state,  e.g. "menu/button_hover.png"
-     *                    Pass null to reuse normalPath with a colour tint on hover.
+     * @param label      text shown on the button
+     * @param centreX    horizontal centre in world coordinates
+     * @param centreY    vertical centre in world coordinates
+     * @param font       BitmapFont owned by the scene (not disposed by this button)
+     * @param normalPath asset path for the normal state, e.g. "menu/button.png"
+     * @param hoverPath  asset path for the hover state, e.g. "menu/button_hover.png";
+     *                   pass null to reuse normalPath with a colour tint on hover
      */
     public static MenuButton withTexture(String label,
                                          float centreX, float centreY,
@@ -88,7 +64,7 @@ public class MenuButton extends Entity implements IRenderable, IDisposable {
 
         Texture hover = (hoverPath != null)
                 ? new Texture(Gdx.files.internal(hoverPath))
-                : normal;                        // reuse normal, tinted in render()
+                : normal;   // reuse normal, tinted in render()
         if (hoverPath != null) {
             hover.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         }
@@ -113,52 +89,12 @@ public class MenuButton extends Entity implements IRenderable, IDisposable {
     /** Full internal constructor used by both modes. */
     private MenuButton(String label, float centreX, float centreY,
                        BitmapFont font, Texture normal, Texture hover) {
-        float x = centreX - BUTTON_WIDTH  / 2f;
-        float y = centreY - BUTTON_HEIGHT / 2f;
-        this.transform = new Transform2D(x, y, BUTTON_WIDTH, BUTTON_HEIGHT);
-        this.label     = label;
-        this.font      = font;
-        this.layout    = new GlyphLayout(font, label);
+        super(label, centreX, centreY, font);
         this.texNormal = normal;
         this.texHover  = hover;
     }
 
-    // ── per-frame input ──────────────────────────────────────────
-
-    /**
-     * Polls cursor position and click state using the provided cursor source.
-     * Call once per frame from the scene's update().
-     *
-     * @param cursor the world-space cursor source (Y-flip already applied)
-     * @param inputQuery the logical input query for this frame
-     */
-    public void updateInput(ICursorSource cursor, IInputQuery inputQuery) {
-        float mx = cursor.getCursorX();
-        float my = cursor.getCursorY();
-
-        float bx = transform.getPosition(0);
-        float by = transform.getPosition(1);
-
-        hovered = mx >= bx && mx <= bx + BUTTON_WIDTH
-               && my >= by && my <= by + BUTTON_HEIGHT;
-
-        if (hovered
-            && inputQuery.getActionState(GameActions.POINTER_PRIMARY) == InputState.PRESSED) {
-            clicked = true;
-        }
-    }
-
-    /** True if the button was clicked this frame. */
-    public boolean isClicked() { return clicked; }
-
-    /** Clears the click flag — call after handling the action. */
-    public void resetClick()   { clicked = false; }
-
     // ── IRenderable ──────────────────────────────────────────────
-
-    /** Returns null — manages its own textures directly. */
-    @Override public String     getAssetPath() { return null; }
-    @Override public ITransform getTransform() { return transform; }
 
     /**
      * Draws the button background (textured or procedural) then the label.

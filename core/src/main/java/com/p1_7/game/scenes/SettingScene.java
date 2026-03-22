@@ -270,6 +270,7 @@ public class SettingScene extends Scene {
             volumeSlider.resetMoved();
         }
         if (brightnessSlider.hasMoved()) {
+            Settings.setBrightnessLevel(brightnessSlider.getValue());
             brightnessLabel.setText(brightnessText());
             brightnessSlider.resetMoved();
         }
