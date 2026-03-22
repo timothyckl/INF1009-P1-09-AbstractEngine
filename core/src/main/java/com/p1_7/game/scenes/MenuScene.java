@@ -51,7 +51,7 @@ public class MenuScene extends Scene {
     private ICursorSource cursorSource;
     private IInputQuery inputQuery;
 
-    // ── entities ─────────────────────────────────────────────────
+    // ── ui components ────────────────────────────────────────────
     private BackgroundImage background;
     private Text           titleText;
     private MenuButton     startButton;
@@ -85,7 +85,7 @@ public class MenuScene extends Scene {
         titleFont = fontManager.getGoldDisplayFont(56);
         buttonFont = fontManager.getDarkTextFont(26);
 
-        // ── entities ─────────────────────────────────────────────
+        // ── ui components ────────────────────────────────────────
         background = new BackgroundImage(BG_ASSET);
         titleText  = new Text("MATH QUEST MAZE", centreX,
                                    Settings.getWindowHeight() * 0.75f, titleFont);
