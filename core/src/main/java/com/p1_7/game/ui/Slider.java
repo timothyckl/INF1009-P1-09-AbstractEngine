@@ -2,6 +2,7 @@ package com.p1_7.game.ui;
 
 import com.badlogic.gdx.graphics.Color;
 import com.p1_7.abstractengine.entity.Entity;
+import com.p1_7.abstractengine.entity.IDisposable;
 import com.p1_7.abstractengine.input.IInputQuery;
 import com.p1_7.abstractengine.input.InputState;
 import com.p1_7.abstractengine.render.IDrawContext;
@@ -19,22 +20,22 @@ import com.p1_7.game.platform.GdxDrawContext;
  * Call updateInput() once per frame, then check hasMoved() and getValue().
  * Call resetMoved() after applying the value.
  */
-public abstract class Slider extends Entity implements IRenderable {
+public abstract class Slider extends Entity implements IRenderable, IDisposable {
 
     /** radius of the draggable knob */
-    protected static final float KNOB_RADIUS  = 14f;
+    private static final float KNOB_RADIUS  = 14f;
     /** half-height of the flat track bar */
-    protected static final float TRACK_HALF_H = 5f;
+    private static final float TRACK_HALF_H = 5f;
 
-    protected final Transform2D transform;
-    protected final float       trackLeft;
-    protected final float       trackCentreY;
-    protected final float       trackWidth;
-    protected final float       knobRadius;
+    private final Transform2D transform;
+    private final float       trackLeft;
+    private final float       trackCentreY;
+    private final float       trackWidth;
+    private final float       knobRadius;
 
-    protected float   value;
-    protected boolean dragging = false;
-    protected boolean moved    = false;
+    private float   value;
+    private boolean dragging = false;
+    private boolean moved    = false;
 
     /**
      * Builds shared slider state from centre position, track span, and initial value.
@@ -152,6 +153,7 @@ public abstract class Slider extends Entity implements IRenderable {
     }
 
     /** No-op — sliders own no GPU resources. */
+    @Override
     public void dispose() { }
 
     /**

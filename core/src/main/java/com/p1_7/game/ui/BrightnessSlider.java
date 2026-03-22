@@ -10,7 +10,7 @@ import com.p1_7.game.Settings;
  * The slider does not mutate Settings directly; the owning scene is responsible for
  * calling Settings.setBrightnessLevel(getValue()) after hasMoved() returns true.
  */
-public class BrightnessSlider extends Slider {
+public final class BrightnessSlider extends Slider {
 
     private static final Color COLOUR_TRACK     = new Color(0.20f, 0.20f, 0.55f, 1f);
     private static final Color COLOUR_FILLED    = new Color(1.00f, 0.88f, 0.42f, 1f);
