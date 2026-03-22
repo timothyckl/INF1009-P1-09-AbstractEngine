@@ -93,8 +93,14 @@ public class MenuScene extends Scene {
         if (startButton    != null) startButton.dispose();
         if (settingsButton != null) settingsButton.dispose();
         if (exitButton     != null) exitButton.dispose();
-        titleFont = null;
-        buttonFont = null;
+        background        = null;
+        titleText         = null;
+        startButton       = null;
+        settingsButton    = null;
+        exitButton        = null;
+        brightnessOverlay = null;
+        titleFont         = null;
+        buttonFont        = null;
     }
 
     @Override

@@ -12,7 +12,7 @@ public interface IDisposable {
 
     /**
      * releases all GPU and native resources owned by this entity.
-     * called by the owning scene in its onExit() hook.
+     * called by the owner when the resources are no longer needed.
      */
     void dispose();
 }
