@@ -10,6 +10,9 @@ import com.p1_7.abstractengine.render.RenderManager;
 
 /**
  * libgdx-specific render manager that provides concrete drawing resources.
+ *
+ * the factory methods create concrete wrapper types. the downcast in
+ * createDrawContext() is safe because this class controls both factories.
  */
 public class GdxRenderManager extends RenderManager {
 
@@ -40,10 +43,10 @@ public class GdxRenderManager extends RenderManager {
 
     /**
      * creates the libgdx draw context. the downcasts are safe here because
-     * this manager creates the concrete types directly.
+     * this manager's factories create the concrete types directly above.
      *
-     * @param batch         the sprite batch
-     * @param shapeRenderer the shape renderer
+     * @param batch         the sprite batch (always a GdxSpriteBatch)
+     * @param shapeRenderer the shape renderer (always a GdxShapeRenderer)
      * @param assetStore    the asset store
      * @return a new GdxDrawContext
      */
