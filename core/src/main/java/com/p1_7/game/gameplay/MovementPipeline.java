@@ -7,20 +7,17 @@ import com.p1_7.game.entities.Player;
  * documents and groups the three-step movement sequence that must execute
  * in a fixed order every frame:
  *
- * <ol>
- *   <li><b>input resolution</b> — Player.update() reads directional input and
- *       commits a velocity vector. executed here.</li>
- *   <li><b>position integration</b> — GameMovementManager.onUpdate() calls
- *       Character.move() to integrate velocity into position. executed by the
- *       engine's dependency-ordered manager lifecycle (depends on SceneManager).</li>
- *   <li><b>collision resolution</b> — MazeCollisionManager.onUpdate() detects
- *       wall penetrations and pushes the player out via minimum translation vector.
- *       executed by the engine's manager lifecycle (depends on GameMovementManager).</li>
- * </ol>
+ * step 1 — input resolution: Player.update() reads directional input and
+ *           commits a velocity vector. executed here.
+ * step 2 — position integration: GameMovementManager.onUpdate() calls
+ *           Character.move(). executed by the engine's manager lifecycle.
+ * step 3 — collision resolution: MazeCollisionManager.onUpdate() detects
+ *           wall penetrations and corrects the position. executed by the
+ *           engine's manager lifecycle.
  *
- * steps 2 and 3 are enforced by the getDependencies() declarations on their
- * respective managers. this class makes the ordering visible at the call site
- * in GameScene.update() so the full pipeline is documented in one place.
+ * steps 2 and 3 are enforced by getDependencies() declarations on their
+ * respective managers. this class makes the ordering visible at the call
+ * site in GameScene.update() so the full pipeline is documented in one place.
  */
 public class MovementPipeline {
 

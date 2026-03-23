@@ -43,12 +43,14 @@ public class GdxRenderManager extends RenderManager {
 
     @Override
     protected ISpriteBatch createSpriteBatch() {
-        return new GdxSpriteBatch();
+        throw new UnsupportedOperationException(
+            "GdxRenderManager creates its resources in onInit(); this factory is not called");
     }
 
     @Override
     protected IShapeRenderer createShapeRenderer() {
-        return new GdxShapeRenderer();
+        throw new UnsupportedOperationException(
+            "GdxRenderManager creates its resources in onInit(); this factory is not called");
     }
 
     @Override
@@ -60,9 +62,7 @@ public class GdxRenderManager extends RenderManager {
     protected IDrawContext createDrawContext(ISpriteBatch batch,
                                              IShapeRenderer shapeRenderer,
                                              IAssetStore assetStore) {
-        // not used — onInit() creates the draw context directly to avoid downcasts
-        return new GdxDrawContext((GdxSpriteBatch) batch,
-                                  (GdxShapeRenderer) shapeRenderer,
-                                  assetStore);
+        throw new UnsupportedOperationException(
+            "GdxRenderManager creates its draw context in onInit(); this factory is not called");
     }
 }

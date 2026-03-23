@@ -10,7 +10,7 @@ import com.p1_7.game.core.Transform2D;
 import com.p1_7.game.platform.GdxDrawContext;
 
 /**
- * Reusable centered text renderable for game and scene text.
+ * reusable centred text renderable for game and scene text.
  */
 public class Text extends Entity implements IRenderable {
 
@@ -30,7 +30,7 @@ public class Text extends Entity implements IRenderable {
 
     public void setText(String text) {
         this.text = text;
-        this.cachedLayout = new GlyphLayout(font, text);
+        this.cachedLayout.setText(font, text);
     }
 
     @Override

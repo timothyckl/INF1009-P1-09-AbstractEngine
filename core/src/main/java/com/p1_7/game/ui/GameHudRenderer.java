@@ -24,8 +24,8 @@ import com.p1_7.game.platform.GdxDrawContext;
  * owns all HUD renderables — score, health, level label, question panel,
  * feedback overlay, room answer labels, and the brightness overlay.
  *
- * created and initialised by GameScene in onEnter(); submitRenderables()
- * is called each frame to queue the HUD layer in painter's order.
+ * created and initialised by GameScene in onEnter(); submitRoomLabels() and
+ * submitHudOverlays() are called each frame to queue the HUD layer in painter's order.
  */
 public class GameHudRenderer {
 
@@ -158,15 +158,6 @@ public class GameHudRenderer {
                 orchestrator.getRoomAssignment().getAnswerForRoom(i));
             roomAnswerLayouts[i].setText(promptFont, roomAnswerTexts[i]);
         }
-    }
-
-    /**
-     * returns the prompt font for external use (e.g. room-label rendering).
-     *
-     * @return the 28pt light text font
-     */
-    public BitmapFont getPromptFont() {
-        return promptFont;
     }
 
     /**
