@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.p1_7.abstractengine.render.IAssetStore;
 import com.p1_7.abstractengine.render.IDrawContext;
@@ -23,16 +22,16 @@ public class GdxDrawContext implements IDrawContext {
     /** the active drawing pass for this frame */
     private enum Pass { NONE, BATCH, SHAPE }
 
-    private final SpriteBatch   batch;
-    private final ShapeRenderer shapeRenderer;
-    private final IAssetStore   assetStore;
-    private final Texture       solidPixel;
+    private final GdxSpriteBatch    batch;
+    private final GdxShapeRenderer  shapeRenderer;
+    private final IAssetStore       assetStore;
+    private final Texture           solidPixel;
 
     private Pass                     currentPass      = Pass.NONE;
     private ShapeRenderer.ShapeType  activeShapeType  = null;
 
     /**
-     * constructs a draw context backed by the provided libgdx resources.
+     * constructs a draw context backed by the provided libgdx wrapper resources.
      *
      * @param batch         the sprite batch wrapper
      * @param shapeRenderer the shape renderer wrapper
@@ -40,8 +39,8 @@ public class GdxDrawContext implements IDrawContext {
      */
     public GdxDrawContext(GdxSpriteBatch batch, GdxShapeRenderer shapeRenderer,
                           IAssetStore assetStore) {
-        this.batch         = batch.unwrap();
-        this.shapeRenderer = shapeRenderer.unwrap();
+        this.batch         = batch;
+        this.shapeRenderer = shapeRenderer;
         this.assetStore    = assetStore;
         this.solidPixel    = createSolidPixel();
     }
@@ -83,6 +82,29 @@ public class GdxDrawContext implements IDrawContext {
         openBatch();
         Texture texture = (Texture) assetStore.loadTexture(assetPath);
         batch.draw(texture, x, y, w, h);
+    }
+
+    /**
+     * draws a sub-region of a managed texture, e.g. one frame of a sprite strip.
+     *
+     * @param assetPath the path to the texture asset
+     * @param srcX      left edge of the source region in texture pixels
+     * @param srcY      top edge of the source region in texture pixels (libgdx y-down)
+     * @param srcW      width of the source region in texture pixels
+     * @param srcH      height of the source region in texture pixels
+     * @param x         left edge of the destination in world coordinates
+     * @param y         bottom edge of the destination in world coordinates
+     * @param w         destination draw width
+     * @param h         destination draw height
+     * @param flipX     true to mirror the region horizontally
+     */
+    public void drawTextureRegion(String assetPath,
+                                  int srcX, int srcY, int srcW, int srcH,
+                                  float x, float y, float w, float h,
+                                  boolean flipX) {
+        openBatch();
+        Texture texture = (Texture) assetStore.loadTexture(assetPath);
+        batch.draw(texture, x, y, w, h, srcX, srcY, srcW, srcH, flipX, false);
     }
 
     /**
@@ -128,7 +150,7 @@ public class GdxDrawContext implements IDrawContext {
      */
     public void drawFont(BitmapFont font, String text, float x, float y) {
         openBatch();
-        font.draw(batch, text, x, y);
+        batch.drawFont(font, text, x, y);
     }
 
     /**
@@ -162,7 +184,7 @@ public class GdxDrawContext implements IDrawContext {
         shapeRenderer.circle(x, y, radius);
     }
 
-    // ── private pass management ───────────────────────────────────
+    // private pass management ──────────────────────────────────────
 
     /**
      * ensures the sprite batch pass is open, closing the shape pass first if needed.
