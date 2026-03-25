@@ -1,4 +1,4 @@
-package com.p1_7.game.ui;
+package com.p1_7.game.hud;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +12,11 @@ import com.p1_7.abstractengine.render.IRenderQueue;
 import com.p1_7.abstractengine.scene.SceneContext;
 import com.p1_7.abstractengine.transform.ITransform;
 import com.p1_7.game.Settings;
-import com.p1_7.game.core.Transform2D;
-import com.p1_7.game.gameplay.Difficulty;
-import com.p1_7.game.gameplay.RoundPhase;
-import com.p1_7.game.level.ILevelOrchestrator;
-import com.p1_7.game.managers.IFontManager;
+import com.p1_7.game.spatial.Transform2D;
+import com.p1_7.game.math.Difficulty;
+import com.p1_7.game.round.RoundPhase;
+import com.p1_7.game.round.ILevelOrchestrator;
+import com.p1_7.game.font.IFontManager;
 import com.p1_7.game.maze.MazeLayout;
 import com.p1_7.game.platform.GdxDrawContext;
 

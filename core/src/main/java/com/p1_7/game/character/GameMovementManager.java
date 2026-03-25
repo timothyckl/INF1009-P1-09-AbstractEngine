@@ -1,10 +1,10 @@
-package com.p1_7.game.managers;
+package com.p1_7.game.character;
 
 import com.p1_7.abstractengine.engine.IManager;
 import com.p1_7.abstractengine.movement.MovementManager;
 import com.p1_7.abstractengine.scene.SceneManager;
 import com.p1_7.game.Settings;
-import com.p1_7.game.ui.HudStrip;
+import com.p1_7.game.hud.HudStrip;
 
 /**
  * concrete MovementManager that handles player position integration and

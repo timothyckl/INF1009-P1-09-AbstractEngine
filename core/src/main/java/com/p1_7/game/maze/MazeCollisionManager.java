@@ -1,4 +1,4 @@
-package com.p1_7.game.managers;
+package com.p1_7.game.maze;
 
 import java.util.HashSet;
 import java.util.List;
@@ -6,12 +6,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 
-import com.p1_7.game.entities.Character;
-import com.p1_7.game.entities.EnemyDamageZone;
-import com.p1_7.game.entities.HostileCharacter;
-import com.p1_7.game.entities.Player;
-import com.p1_7.game.items.Item;
-import com.p1_7.game.maze.WallCollidable;
+import com.p1_7.game.character.Character;
+import com.p1_7.game.character.EnemyDamageZone;
+import com.p1_7.game.character.GameMovementManager;
+import com.p1_7.game.character.HostileCharacter;
+import com.p1_7.game.character.Player;
+import com.p1_7.game.collectible.Item;
 
 import com.p1_7.abstractengine.collision.CollisionManager;
 import com.p1_7.abstractengine.collision.CollisionPair;
