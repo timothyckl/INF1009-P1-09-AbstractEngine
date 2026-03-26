@@ -1,12 +1,11 @@
 name: CI Pipeline
 
-# Trigger the pipeline on pushes to your specific test branch and main/develop,
-# and on pull requests targeting main/develop.
+# run on every push to main and on every pull request targeting main
 on:
   push:
-    branches: [ "main", "test/ci-pipeline" ] # test/ci-pipeline can be safely removed
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main", "test/ci-pipeline" ] # any integration branches will need to be manually added in here, for now, the .yml is treating main as the sole integration branch
+    branches: [ "main" ]
 
 jobs:
   build-and-test:
@@ -19,15 +18,23 @@ jobs:
     - name: Set up JDK 8
       uses: actions/setup-java@v4
       with:
-        java-version: '8' # Matches your project's sourceCompatibility
+        java-version: '8'
         distribution: 'temurin'
         cache: gradle
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build Project
+    - name: Build project (skip tests)
       run: ./gradlew build -x test --warning-mode all
 
-    - name: Run Automated Unit Tests
+    - name: Run unit tests
       run: ./gradlew core:test
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: core/build/test-results/test/
+        retention-days: 14

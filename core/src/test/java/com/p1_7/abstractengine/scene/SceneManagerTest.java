@@ -122,4 +122,36 @@ public class SceneManagerTest {
         sceneManager.update(1.0f);
         assertEquals(1, menu.updateCount, "Update count should remain 1 because the scene is paused");
     }
+
+    @Test
+    public void testResumeTransition_callsOnResumeNotOnEnter() {
+        // Arrange: game → suspend → settings → change back to game should call onResume on game
+        TrackingScene game     = new TrackingScene("game");
+        TrackingScene settings = new TrackingScene("settings");
+        sceneManager.registerScene(game);
+        sceneManager.registerScene(settings);
+        sceneManager.setInitialScene("game");
+        sceneManager.init();
+
+        // Act: suspend game, open settings
+        sceneManager.requestSuspend("settings");
+        sceneManager.update(1.0f);
+
+        assertEquals(1, game.suspendCount,    "game should have been suspended");
+        assertEquals(1, settings.enterCount,  "settings should have entered");
+
+        // Act: change back to game (the suspended scene) — should trigger onResume
+        sceneManager.requestChange("game");
+        sceneManager.update(1.0f);
+
+        // Assert: game is resumed, not re-entered; settings is exited
+        assertEquals(1, game.resumeCount,
+            "Changing back to the suspended scene must call onResume");
+        assertEquals(1, game.enterCount,
+            "onEnter must NOT be called again on a resume — it was only called during init");
+        assertEquals(1, settings.exitCount,
+            "The overlay scene must exit when the suspended scene is resumed");
+        assertEquals(game, sceneManager.getCurrentScene(),
+            "game must be the active scene after resume");
+    }
 }

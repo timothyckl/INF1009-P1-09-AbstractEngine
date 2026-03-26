@@ -4,98 +4,172 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Validates the InputManager's core polling loop.
- * Ensures that it correctly combines the InputMapping registry with the physical IInputSource hardware.
+ * Validates the InputManager's polling loop: action-state derivation from
+ * physical key/button presses, multi-key bindings, and the PRESSED/HELD/RELEASED
+ * state machine across consecutive frames.
+ *
+ * Bindings are seeded via the two-arg constructor using InputBindingSpec rather
+ * than reflective field access.
  */
 public class InputManagerTest {
 
     private IInputSource mockSource;
-    private InputManager inputManager;
-    private InputMapping mapping;
     private ActionId jumpAction;
     private ActionId shootAction;
 
     @BeforeEach
-    public void setUp() throws Exception {
-        // Mock the hardware source so we don't need a real keyboard to test
-        mockSource = Mockito.mock(IInputSource.class);
-        inputManager = new InputManager(mockSource);
-        
-        // Safely extract the InputMapping using Reflection to respect encapsulation
-        Field mappingField = null;
-        for (Field field : InputManager.class.getDeclaredFields()) {
-            if (field.getType().equals(InputMapping.class)) {
-                mappingField = field;
-                break;
-            }
-        }
-        
-        if (mappingField != null) {
-            mappingField.setAccessible(true);
-            mapping = (InputMapping) mappingField.get(inputManager);
-        } else {
-            fail("InputManager does not contain an internal InputMapping field!");
-        }
-        
-        jumpAction = new ActionId("JUMP");
+    public void setUp() {
+        mockSource  = Mockito.mock(IInputSource.class);
+        jumpAction  = new ActionId("JUMP");
         shootAction = new ActionId("SHOOT");
-
-        // Boot up the manager exactly like the Engine would
-        inputManager.init();
     }
+
+    // --- helper: build a manager pre-seeded with the given bindings ---
+
+    private InputManager managerWithBindings(InputBindingSpec... specs) {
+        List<InputBindingSpec> list = new ArrayList<>();
+        for (InputBindingSpec s : specs) {
+            list.add(s);
+        }
+        InputManager mgr = new InputManager(mockSource, list);
+        mgr.init();
+        return mgr;
+    }
+
+    // --- isActionActive: keyboard ---
 
     @Test
     public void testIsActionActive_ViaKeyboard() {
-        // Arrange: Bind physical key 51 to logical action JUMP
-        mapping.bindKey(51, jumpAction);
-        
-        // Tell the mocked hardware to pretend key 51 is currently being pressed down
+        InputManager mgr = managerWithBindings(InputBindingSpec.keys(jumpAction, 51));
+
         Mockito.when(mockSource.isKeyPressed(51)).thenReturn(true);
-        
-        // ACT: Tick the Engine! 
-        // This forces the InputManager to poll the hardware and update its internal per-frame cache.
-        inputManager.update(0.016f);
-        
-        // Assert
-        assertTrue(inputManager.isActionActive(jumpAction), "Manager should return true when the mapped key is physically pressed");
-        assertFalse(inputManager.isActionActive(shootAction), "Manager should return false for unbound/unpressed actions");
+        mgr.update(0.016f);
+
+        assertTrue(mgr.isActionActive(jumpAction),
+            "Manager should return true when the mapped key is physically pressed");
+        assertFalse(mgr.isActionActive(shootAction),
+            "Manager should return false for unbound/unpressed actions");
     }
 
     @Test
-    public void testIsActionActive_ViaMouse() {
-        // Arrange: Bind physical mouse button 0 to logical action SHOOT
-        mapping.bindButton(0, shootAction);
-        
-        // Tell the mocked hardware to pretend mouse button 0 is currently being pressed down
-        Mockito.when(mockSource.isButtonPressed(0)).thenReturn(true);
-        
-        // ACT: Tick the Engine!
-        inputManager.update(0.016f);
-        
-        // Assert
-        assertTrue(inputManager.isActionActive(shootAction), "Manager should return true when the mapped button is physically pressed");
-        assertFalse(inputManager.isActionActive(jumpAction), "Manager should return false for unbound/unpressed actions");
+    public void testIsActionActive_keyNotPressed_returnsFalse() {
+        InputManager mgr = managerWithBindings(InputBindingSpec.keys(jumpAction, 51));
+
+        Mockito.when(mockSource.isKeyPressed(51)).thenReturn(false);
+        mgr.update(0.016f);
+
+        assertFalse(mgr.isActionActive(jumpAction),
+            "Manager should return false when the mapped key is not pressed");
     }
-    
+
+    // --- isActionActive: mouse button ---
+
+    @Test
+    public void testIsActionActive_ViaMouse() {
+        InputBindingSpec spec = new InputBindingSpec(
+            shootAction,
+            Collections.<Integer>emptyList(),
+            Collections.singletonList(0)
+        );
+        InputManager mgr = managerWithBindings(spec);
+
+        Mockito.when(mockSource.isButtonPressed(0)).thenReturn(true);
+        mgr.update(0.016f);
+
+        assertTrue(mgr.isActionActive(shootAction),
+            "Manager should return true when the mapped button is physically pressed");
+        assertFalse(mgr.isActionActive(jumpAction),
+            "Manager should return false for unbound/unpressed actions");
+    }
+
+    // --- multiple keys bound to one action ---
+
     @Test
     public void testIsActionActive_MultipleKeysMapped() {
-        // Arrange: Bind BOTH key 51 and key 19 to JUMP
-        mapping.bindKey(51, jumpAction);
-        mapping.bindKey(19, jumpAction);
-        
-        // Simulate pressing ONLY the alternate key (19)
+        // bind key 51 and key 19 to JUMP; only the alternate key 19 is pressed
+        InputManager mgr = managerWithBindings(InputBindingSpec.keys(jumpAction, 51, 19));
+
         Mockito.when(mockSource.isKeyPressed(51)).thenReturn(false);
         Mockito.when(mockSource.isKeyPressed(19)).thenReturn(true);
-        
-        // ACT: Tick the Engine!
-        inputManager.update(0.016f);
-        
-        // Assert: The action should still trigger!
-        assertTrue(inputManager.isActionActive(jumpAction), "Action should trigger if ANY of its mapped keys are pressed");
+        mgr.update(0.016f);
+
+        assertTrue(mgr.isActionActive(jumpAction),
+            "Action should trigger if ANY of its mapped keys are pressed");
+    }
+
+    // --- multi-frame PRESSED → HELD → RELEASED → inactive state transitions ---
+
+    @Test
+    public void testStateTransition_pressed_onFirstFrameDown() {
+        InputManager mgr = managerWithBindings(InputBindingSpec.keys(jumpAction, 51));
+
+        Mockito.when(mockSource.isKeyPressed(51)).thenReturn(true);
+        mgr.update(0.016f);
+
+        assertEquals(InputState.PRESSED, mgr.getActionState(jumpAction),
+            "First frame a key is down must report PRESSED");
+    }
+
+    @Test
+    public void testStateTransition_held_onSecondConsecutiveFrame() {
+        InputManager mgr = managerWithBindings(InputBindingSpec.keys(jumpAction, 51));
+        Mockito.when(mockSource.isKeyPressed(51)).thenReturn(true);
+
+        mgr.update(0.016f); // PRESSED
+        mgr.update(0.016f); // should become HELD
+
+        assertEquals(InputState.HELD, mgr.getActionState(jumpAction),
+            "Second consecutive frame a key is down must report HELD");
+    }
+
+    @Test
+    public void testStateTransition_released_onFrameAfterKeyUp() {
+        InputManager mgr = managerWithBindings(InputBindingSpec.keys(jumpAction, 51));
+
+        Mockito.when(mockSource.isKeyPressed(51)).thenReturn(true);
+        mgr.update(0.016f); // PRESSED
+        mgr.update(0.016f); // HELD
+
+        Mockito.when(mockSource.isKeyPressed(51)).thenReturn(false);
+        mgr.update(0.016f); // should become RELEASED
+
+        assertEquals(InputState.RELEASED, mgr.getActionState(jumpAction),
+            "Frame after key is released must report RELEASED");
+    }
+
+    @Test
+    public void testStateTransition_inactive_afterReleasedFrame() {
+        InputManager mgr = managerWithBindings(InputBindingSpec.keys(jumpAction, 51));
+
+        Mockito.when(mockSource.isKeyPressed(51)).thenReturn(true);
+        mgr.update(0.016f);
+        Mockito.when(mockSource.isKeyPressed(51)).thenReturn(false);
+        mgr.update(0.016f); // RELEASED
+
+        mgr.update(0.016f); // next frame — should be inactive
+
+        assertNull(mgr.getActionState(jumpAction),
+            "Action must become inactive the frame after RELEASED");
+        assertFalse(mgr.isActionActive(jumpAction));
+    }
+
+    // --- input disabled ---
+
+    @Test
+    public void testInputDisabled_noActionsReported() {
+        InputManager mgr = managerWithBindings(InputBindingSpec.keys(jumpAction, 51));
+        Mockito.when(mockSource.isKeyPressed(51)).thenReturn(true);
+        mgr.setInputEnabled(false);
+        mgr.update(0.016f);
+
+        assertFalse(mgr.isActionActive(jumpAction),
+            "No actions must be active while input is disabled");
     }
 }

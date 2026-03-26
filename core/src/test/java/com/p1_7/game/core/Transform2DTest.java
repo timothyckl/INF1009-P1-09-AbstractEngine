@@ -1,5 +1,6 @@
 package com.p1_7.game.core;
 
+import com.p1_7.game.spatial.Transform2D;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

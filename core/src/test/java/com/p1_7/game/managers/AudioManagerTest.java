@@ -1,5 +1,6 @@
 package com.p1_7.game.managers;
 
+import com.p1_7.game.audio.AudioManager;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Application;
 import org.junit.jupiter.api.BeforeEach;

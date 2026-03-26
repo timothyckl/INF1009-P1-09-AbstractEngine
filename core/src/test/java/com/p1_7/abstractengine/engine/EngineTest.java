@@ -3,11 +3,15 @@ package com.p1_7.abstractengine.engine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Validates the core Engine lifecycle bootstrapper.
- * Ensures that registered managers receive their init, update, and shutdown calls.
+ * Ensures that registered managers receive their init, update, and shutdown calls,
+ * and that dependency ordering is enforced by the topological sort.
  */
 public class EngineTest {
 
@@ -32,6 +36,29 @@ public class EngineTest {
         @Override protected void onShutdown() { shutdownCalled = true; }
     }
 
+    // --- Ordered managers for dependency ordering test ---
+
+    // records its own name into a shared list when initialised
+    private static class OrderedManagerA extends Manager {
+        private final List<String> log;
+        OrderedManagerA(List<String> log) { this.log = log; }
+        @Override protected void onInit() { log.add("A"); }
+    }
+
+    // declares a dependency on OrderedManagerA
+    private static class OrderedManagerB extends Manager {
+        private final List<String> log;
+        OrderedManagerB(List<String> log) { this.log = log; }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public Class<? extends IManager>[] getDependencies() {
+            return new Class[]{OrderedManagerA.class};
+        }
+
+        @Override protected void onInit() { log.add("B"); }
+    }
+
     @BeforeEach
     public void setUp() {
         engine = new Engine();
@@ -39,7 +66,6 @@ public class EngineTest {
 
     @Test
     public void testEngineLifecycle() {
-        // Arrange
         DummyStandardManager standardManager = new DummyStandardManager();
         DummyUpdatableManager updatableManager = new DummyUpdatableManager();
 
@@ -49,20 +75,17 @@ public class EngineTest {
         // Act 1: Initialization
         engine.init();
 
-        // Assert 1: Both managers should be initialized
-        assertTrue(standardManager.initCalled, "Standard manager should be initialized");
-        assertTrue(updatableManager.initCalled, "Updatable manager should be initialized");
+        assertTrue(standardManager.initCalled, "Standard manager should be initialised");
+        assertTrue(updatableManager.initCalled, "Updatable manager should be initialised");
 
         // Act 2: Update Loop
         engine.update(1.0f);
 
-        // Assert 2: ONLY the UpdatableManager should receive the update tick
         assertTrue(updatableManager.updateCalled, "Updatable manager should receive update ticks");
 
         // Act 3: Shutdown
         engine.shutdown();
 
-        // Assert 3: Both managers should be shut down
         assertTrue(standardManager.shutdownCalled, "Standard manager should be shut down");
         assertTrue(updatableManager.shutdownCalled, "Updatable manager should be shut down");
     }
@@ -71,10 +94,26 @@ public class EngineTest {
     public void testGetManager() {
         DummyStandardManager standardManager = new DummyStandardManager();
         engine.registerManager(standardManager);
-        
-        // Assert we can retrieve it by its exact class
+
         DummyStandardManager retrieved = engine.getManager(DummyStandardManager.class);
         assertNotNull(retrieved);
         assertEquals(standardManager, retrieved);
+    }
+
+    @Test
+    public void testDependencyOrdering_dependencyInitialisedBeforeDependant() {
+        // register in reverse order — the engine must still initialise A before B
+        List<String> initOrder = new ArrayList<>();
+        OrderedManagerA a = new OrderedManagerA(initOrder);
+        OrderedManagerB b = new OrderedManagerB(initOrder);
+
+        engine.registerManager(b); // registered first but depends on A
+        engine.registerManager(a);
+        engine.init();
+
+        assertEquals(2, initOrder.size());
+        assertEquals("A", initOrder.get(0),
+            "OrderedManagerA (dependency) must be initialised before OrderedManagerB (dependant)");
+        assertEquals("B", initOrder.get(1));
     }
 }
