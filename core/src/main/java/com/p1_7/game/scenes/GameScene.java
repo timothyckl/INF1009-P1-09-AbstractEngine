@@ -42,15 +42,15 @@ import com.p1_7.game.round.RoundPhase;
 import com.p1_7.game.spatial.Transform2D;
 
 /**
- * core gameplay scene â€” wires the level orchestrator, player movement, wall collision,
+ * core gameplay scene - wires the level orchestrator, player movement, wall collision,
  * and answer-room entry detection.
  *
  * delegates gameplay responsibilities to focused collaborators:
- *   - GamePhaseController  â€” phase state machine and room-entry detection
- *   - EnemyController      â€” enemy spawning and AI updates
- *   - GameHudRenderer      â€” score, health, level, feedback, and answer labels
- *   - ItemSpawner          â€” heart pickup placement
- *   - MovementPipeline     â€” documents the three-step movement ordering
+ *   - GamePhaseController  - phase state machine and room-entry detection
+ *   - EnemyController      - enemy spawning and AI updates
+ *   - GameHudRenderer      - score, health, level, feedback, and answer labels
+ *   - ItemSpawner          - heart pickup placement
+ *   - MovementPipeline     - documents the three-step movement ordering
  */
 public class GameScene extends Scene implements GamePhaseListener, ItemCollectionListener, PlayerDamageListener {
 
@@ -74,7 +74,7 @@ public class GameScene extends Scene implements GamePhaseListener, ItemCollectio
     /** the fixed spatial layout providing spawn point, room bounds, and wall bounds */
     private MazeLayout layout;
 
-    /** the player entity â€” created at scene entry, released on exit */
+    /** the player entity - created at scene entry, released on exit */
     private Player player;
 
     /** all hostile characters (goblins + skeletons) */
@@ -103,7 +103,7 @@ public class GameScene extends Scene implements GamePhaseListener, ItemCollectio
 
     /**
      * cached copies of the four room bounds arrays; MazeLayout is immutable so these
-     * never change â€” caching avoids defensive-clone allocations inside the per-frame loop
+     * never change - caching avoids defensive-clone allocations inside the per-frame loop
      */
     private float[][] cachedRoomBounds;
 
