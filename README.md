@@ -89,8 +89,8 @@ Math Quest Maze is a maze-exploration game where the player navigates a series o
 |------|----------|
 | *screenshot* | *screenshot* |
 
-| Game Over | Level Complete |
-|-----------|----------------|
+| How To Play | Settings |
+|-------------|----------|
 | *screenshot* | *screenshot* |
 
 **Gameplay**
