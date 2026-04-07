@@ -4,7 +4,7 @@ This repository contains two layers: the **Abstract Simulation Engine**, a reusa
 
 ## Engine Architecture
 
-![uml-diagram 2](https://github.com/user-attachments/assets/d880053c-964c-4766-872a-ed88503f0ba0)
+<img width="1500" height="734" alt="engine-uml" src="https://github.com/user-attachments/assets/ad92dbba-c62a-4da1-b619-21e0ff97cad1" />
 
 The engine is organised around a central orchestrator, abstract base classes, and concrete manager implementations:
 
@@ -87,11 +87,11 @@ Math Quest Maze is a maze-exploration game where the player navigates a series o
 
 | Menu | Gameplay |
 |------|----------|
-| *screenshot* | *screenshot* |
+| <img width="1276" height="715" alt="menu-scene" src="https://github.com/user-attachments/assets/eb520c4c-cb80-4481-abe1-3724838ffd15" /> | <img width="1275" height="698" alt="game-scene" src="https://github.com/user-attachments/assets/45b622a5-7014-40d9-8b09-571fd90bbf92" /> |
 
 | How To Play | Settings |
 |-------------|----------|
-| *screenshot* | *screenshot* |
+| <img width="1277" height="714" alt="how-to-play-scene" src="https://github.com/user-attachments/assets/5e5a4773-a644-489c-9ef7-9eb5b9b2be4a" /> | <img width="1275" height="717" alt="setting-scene" src="https://github.com/user-attachments/assets/89ad6f21-9546-4f63-b7d8-eda9f8ec972e" /> |
 
 **Gameplay**
 - The player moves through a maze split into labelled answer rooms, each corresponding to a possible answer to the current maths question
