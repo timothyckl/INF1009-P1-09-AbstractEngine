@@ -1,6 +1,40 @@
-# Abstract Simulation Engine & Math Quest Maze
+# Math Quest Maze & Abstract Simulation Engine
 
-This repository contains two layers: the **Abstract Simulation Engine**, a reusable game engine built with [libGDX](https://libgdx.com/) following OOP and SOLID principles, and **Math Quest Maze**, a complete game built on top of it as the primary project deliverable. The engine's core classes are intentionally abstract and provide no runnable behaviour on their own; the game layer is a full implementation that exercises every engine subsystem.
+This repository contains two layers: **Math Quest Maze**, the primary project deliverable — a complete game built with [libGDX](https://libgdx.com/) — and the **Abstract Simulation Engine** it is built on top of, following OOP and SOLID principles. The engine's core classes are intentionally abstract and provide no runnable behaviour on their own; the game layer is a full implementation that exercises every engine subsystem.
+
+## Game: Math Quest Maze
+
+Math Quest Maze is a maze-exploration game where the player navigates a series of rooms and answers arithmetic questions to progress through levels. It exercises every engine subsystem end-to-end.
+
+**Screenshots**
+
+| Menu | Gameplay |
+|------|----------|
+| <img width="1276" height="715" alt="menu-scene" src="https://github.com/user-attachments/assets/eb520c4c-cb80-4481-abe1-3724838ffd15" /> | <img width="1275" height="698" alt="game-scene" src="https://github.com/user-attachments/assets/45b622a5-7014-40d9-8b09-571fd90bbf92" /> |
+
+| How To Play | Settings |
+|-------------|----------|
+| <img width="1277" height="714" alt="how-to-play-scene" src="https://github.com/user-attachments/assets/5e5a4773-a644-489c-9ef7-9eb5b9b2be4a" /> | <img width="1275" height="717" alt="setting-scene" src="https://github.com/user-attachments/assets/89ad6f21-9546-4f63-b7d8-eda9f8ec972e" /> |
+
+**Gameplay**
+- The player moves through a maze split into labelled answer rooms, each corresponding to a possible answer to the current maths question
+- Entering the correct room advances the round; entering an incorrect room incurs a penalty
+- Hostile enemies (Goblin and Skeleton) patrol the maze and deal damage on contact
+- Collectible hearts are scattered through the maze and restore health when picked up
+
+**Difficulty**
+
+| Level  | Operand range | Operations |
+|--------|---------------|------------|
+| Easy   | 1 – 10        | Addition, Subtraction |
+| Medium | 1 – 20        | Addition, Subtraction, Multiplication |
+| Hard   | 1 – 100       | Addition, Subtraction, Multiplication, Division |
+
+**Scene flow**
+
+Main Menu → Gameplay → Pause / Level Complete / Game Over → (back to menu or next level)
+
+A How To Play screen and a Settings screen (volume, SFX, brightness, and key remapping) are accessible from the main menu.
 
 ## Engine Architecture
 
@@ -37,24 +71,6 @@ Entities implement capability interfaces (`IMovable`, `ICollidable`, `IRenderabl
 
 ## Project Structure
 
-### Engine layer
-
-```bash
-abstractengine/
-├── collision/   # ICollidable, IBounds, CollisionManager, CollisionDetector, SpatialTree, CollisionPair
-├── engine/      # Engine, Manager, UpdatableManager, IManager, IUpdatable,
-│                #   ManagerResolver, DependencySorter, DirectedAcyclicGraph
-├── entity/      # Entity, EntityManager, EntityFactory, IEntityManager, IEntityMutator, IEntityRepository
-├── input/       # InputManager, InputMapping, IInputManager, IInputQuery, IInputSource,
-│                #   IInputMapping, IInputExtension, IInputExtensionRegistry,
-│                #   ActionId, InputBindingSpec, InputEvent, InputState
-├── movement/    # MovementManager, IMovable
-├── render/      # RenderManager, RenderQueue, IRenderable, IRenderQueue,
-│                #   IDrawContext, IAssetStore, ISpriteBatch, IShapeRenderer
-├── scene/       # Scene, SceneManager, SceneContext
-└── transform/   # ITransform, ITransformable
-```
-
 ### Game layer
 
 ```bash
@@ -79,39 +95,23 @@ game/
                  #   BrightnessOverlay, RemapSlot, Text, BackgroundImage
 ```
 
-## Game: Math Quest Maze
+### Engine layer
 
-Math Quest Maze is a maze-exploration game where the player navigates a series of rooms and answers arithmetic questions to progress through levels. It is the primary deliverable of this project and exercises every engine subsystem end-to-end.
-
-**Screenshots**
-
-| Menu | Gameplay |
-|------|----------|
-| <img width="1276" height="715" alt="menu-scene" src="https://github.com/user-attachments/assets/eb520c4c-cb80-4481-abe1-3724838ffd15" /> | <img width="1275" height="698" alt="game-scene" src="https://github.com/user-attachments/assets/45b622a5-7014-40d9-8b09-571fd90bbf92" /> |
-
-| How To Play | Settings |
-|-------------|----------|
-| <img width="1277" height="714" alt="how-to-play-scene" src="https://github.com/user-attachments/assets/5e5a4773-a644-489c-9ef7-9eb5b9b2be4a" /> | <img width="1275" height="717" alt="setting-scene" src="https://github.com/user-attachments/assets/89ad6f21-9546-4f63-b7d8-eda9f8ec972e" /> |
-
-**Gameplay**
-- The player moves through a maze split into labelled answer rooms, each corresponding to a possible answer to the current maths question
-- Entering the correct room advances the round; entering an incorrect room incurs a penalty
-- Hostile enemies (Goblin and Skeleton) patrol the maze and deal damage on contact
-- Collectible hearts are scattered through the maze and restore health when picked up
-
-**Difficulty**
-
-| Level  | Operand range | Operations |
-|--------|---------------|------------|
-| Easy   | 1 – 10        | Addition, Subtraction |
-| Medium | 1 – 20        | Addition, Subtraction, Multiplication |
-| Hard   | 1 – 100       | Addition, Subtraction, Multiplication, Division |
-
-**Scene flow**
-
-Main Menu → Gameplay → Pause / Level Complete / Game Over → (back to menu or next level)
-
-A How To Play screen and a Settings screen (volume, SFX, brightness, and key remapping) are accessible from the main menu.
+```bash
+abstractengine/
+├── collision/   # ICollidable, IBounds, CollisionManager, CollisionDetector, SpatialTree, CollisionPair
+├── engine/      # Engine, Manager, UpdatableManager, IManager, IUpdatable,
+│                #   ManagerResolver, DependencySorter, DirectedAcyclicGraph
+├── entity/      # Entity, EntityManager, EntityFactory, IEntityManager, IEntityMutator, IEntityRepository
+├── input/       # InputManager, InputMapping, IInputManager, IInputQuery, IInputSource,
+│                #   IInputMapping, IInputExtension, IInputExtensionRegistry,
+│                #   ActionId, InputBindingSpec, InputEvent, InputState
+├── movement/    # MovementManager, IMovable
+├── render/      # RenderManager, RenderQueue, IRenderable, IRenderQueue,
+│                #   IDrawContext, IAssetStore, ISpriteBatch, IShapeRenderer
+├── scene/       # Scene, SceneManager, SceneContext
+└── transform/   # ITransform, ITransformable
+```
 
 ## CI/CD Pipeline
 
